@@ -1,73 +1,152 @@
-# ⚠️ ShopNexus — Intentionally Vulnerable Web Lab
+# ShopNexus — Intentionally Vulnerable E-Commerce Lab
 
-> **BU TƏTBİQ QƏSDƏN ZƏİFDİR. YALNIZ LOKAL MÜHİTDƏ, TƏHSİL MƏQSƏDİLƏ İSTİFADƏ EDİN.**
->
-> This application is intentionally vulnerable. Run it **locally only**.
-> Do **not** deploy it to a public server, do **not** expose it to the internet,
-> and never reuse these credentials or secrets anywhere else.
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Purpose: security training](https://img.shields.io/badge/purpose-security%20training-red)](#-warning)
 
-ShopNexus — Node.js/Express + NeDB üzərində qurulmuş, çoxrollu (Customer / Vendor / Admin)
-e-ticarət platformasıdır. Layihə təhlükəsizlik məşqi (web security lab) üçün hazırlanıb:
-tətbiqin əsas funksionallığı tam işləkdir, içinə isə **15 qəsdən yerləşdirilmiş zəiflik**
-(5 Easy, 5 Medium, 5 Hard) daxil edilib.
+> ## ⚠️ WARNING
+> **ShopNexus is intentionally vulnerable. It is a training target, not a real product.**
+> Run it **only** on your own machine, in an isolated/local environment.
+> Never deploy it to a public server, never expose it to the internet, and never reuse
+> its credentials or secrets anywhere else.
 
-Challenge siyahısı: [`CHALLENGES.md`](CHALLENGES.md). Həllər bu repoda yoxdur.
+ShopNexus is a fully working multi-vendor e-commerce platform (Node.js + Express + EJS + NeDB)
+that has been **deliberately seeded with 15 security vulnerabilities** — 5 easy, 5 medium and
+5 hard. Everything a normal shop needs works: registration, vendor stores, catalog and search,
+cart, coupons, wallet, card checkout with OTP, orders, receipts with QR verification, refunds,
+gift cards, reviews, Q&A, support tickets, notifications and a full admin console.
+
+The application is meant to be *used* like a real shop while you hunt for the planted flaws.
+It is aimed at:
+
+- **Pentesters / AppSec engineers** practising web exploitation against a realistic multi-role app
+- **Students and self-learners** working through OWASP-style vulnerability classes
+- **Instructors** running secure-coding or capture-the-flag style workshops
+- Anyone who wants a safe, local target for Burp Suite, ZAP, curl or Postman
+
+Challenge briefs (targets only, **no solutions**) live in [`CHALLENGES.md`](CHALLENGES.md).
 
 ---
 
-## Tələblər
+## Features
 
-- **Node.js 18+** (tövsiyə: 20 və ya 22 LTS)
-- npm
+### Application
 
-Yoxlamaq üçün:
+- **Three separate portals** — Customer (`/auth/login`), Vendor (`/auth/vendor/login`) and
+  Admin (`/auth/admin/login`), each with its own cookie and landing page
+- **Multi-vendor marketplace** — 8 demo stores, per-vendor dashboards, product CRUD,
+  vendor questions and answers
+- **Catalog** — categories, search, price/brand filters, sorting, featured products
+- **Shopping** — cart, wishlist, coupon codes, first-order and usage-limited promotions
+- **Checkout** — wallet balance, saved cards, simulated card payments, OTP confirmation step
+- **Post-purchase** — order history and search, status tracking, refunds, QR-verified receipts
+- **Money features** — wallet top-up, gift cards, cashback, admin commission settings
+- **Engagement** — product reviews, ratings, support tickets, in-app notifications
+- **Admin console** — users, vendors, products, coupons, refunds, payments, platform settings
+- **i18n** — Azerbaijani, English and Russian locales
+- **Storage** — embedded NeDB files in `data/`, so there is no database to install
+
+### Deliberately planted vulnerabilities (15)
+
+| ID | Difficulty | Vulnerability class | Entry point |
+|----|------------|---------------------|-------------|
+| E1 | Easy | Open redirect | `POST /lang/:code` |
+| E2 | Easy | OTP rate limiting | `POST /checkout/otp` |
+| E3 | Easy | Review IDOR | `POST /reviews/:id/delete` |
+| E4 | Easy | Coupon validation / business logic | `POST /vendor/coupons`, `POST /admin/coupons` |
+| E5 | Easy | Hidden & debug endpoints | `GET /debug/*`, `GET /admin/system` |
+| M6 | Medium | CSRF | `POST /user/profile`, `POST /user/address` |
+| M7 | Medium | Mass assignment | `POST /user/profile` |
+| M8 | Medium | Coupon usage counting flaw | `POST /orders` |
+| M9 | Medium | NoSQL / query injection | `POST /orders/search` |
+| M10 | Medium | Cross-portal / JWT role mismatch | authentication flow (`/auth/*`) |
+| H11 | Hard | Broken object-level authorization (support tickets) | `POST /support/:id/reply` |
+| H12 | Hard | Host header injection | `GET /receipts/:token` |
+| H13 | Hard | Refund state-machine confusion | `POST /admin/refunds/:id/approve` |
+| H14 | Hard | Gift card race condition | `POST /wallet/redeem-giftcard` |
+| H15 | Hard | Vendor isolation (BOLA) | `POST /vendor/questions/:id/answer` |
+
+Additional hardening gaps exist beyond the 15 headline challenges — treat any suspicious
+behaviour as fair game.
+
+---
+
+## Requirements
+
+- **Node.js 18 or newer** (20 / 22 LTS recommended)
+- **npm** (bundled with Node.js)
+- A modern browser
 
 ```bash
 node -v
 npm -v
 ```
 
-## Quraşdırma və işə salma (lokal)
+No external database, message broker or network access is required.
+
+---
+
+## Installation
 
 ```bash
-git clone <repo-url> shopnexus-lab
+git clone https://github.com/aliyev-hasan/shopnexus-lab.git
 cd shopnexus-lab
 npm install
 ```
 
-Konfiqurasiya faylını yarat:
+Create the local configuration file from the template:
 
 ```bash
-# Windows (cmd)
-copy .env.example .env
+# macOS / Linux / Git Bash
+cp .env.example .env
 
-# PowerShell
+# Windows PowerShell
 Copy-Item .env.example .env
 
-# macOS / Linux
-cp .env.example .env
+# Windows cmd
+copy .env.example .env
 ```
 
-Serveri başladın:
+Start the server:
 
 ```bash
 npm start
 ```
 
-Brauzerdə açın: **http://localhost:3000**
+Then open **<http://localhost:3000>**.
 
-> Saytı mütləq `localhost` ünvanı ilə açın. `192.168.x.x` kimi LAN IP ilə açsanız,
-> auth cookie-ləri (`Secure`) brauzer tərəfindən saxlanmaya bilər və giriş dövrəyə düşə bilər.
+### Development mode (auto-restart)
 
-### Portu dəyişmək
+```bash
+npm run dev
+```
 
-`.env` faylında:
+---
+
+## Configuration
+
+All configuration lives in `.env` (git-ignored). `.env.example` contains safe lab defaults.
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `NODE_ENV` | `development` | Runtime mode. Keep `development` for the lab. |
+| `PORT` | `3000` | HTTP port the server listens on. |
+| `PUBLIC_BASE_URL` | *(empty)* | Absolute base URL used in receipt/QR links. When empty, links are built from the incoming request host — the right behaviour for local experimenting. |
+| `JWT_SECRET` | `development-only-jwt-key` | Signing key for auth tokens. The well-known development value is intentional and is part of the lab's authentication challenges. |
+| `SESSION_SECRET` | `development-only-session-key` | Signing key for the Express session cookie. Lab value only. |
+| `DEMO_ACCOUNT_PASSWORD` | `ShopNexusLab2026!` | Only used by the seed scripts (`npm run seed`, `npm run seed:marketplace`). Does not affect the credentials below unless you reseed. |
+
+> Every secret in `.env.example` is a **dummy**. Do not copy them into any other project.
+
+### Changing the port
+
+Edit `.env`:
 
 ```env
 PORT=4000
 ```
 
-və ya env dəyişəni ilə:
+or override it for a single run:
 
 ```bash
 # PowerShell
@@ -80,108 +159,139 @@ set PORT=4000 && npm start
 PORT=4000 npm start
 ```
 
-### Development rejimi (avtomatik restart)
+---
 
-```bash
-npm run dev
-```
+## Default Credentials
 
-## Demo hesablar
+The repository ships with a pre-seeded database in `data/`, so every account below works
+**immediately after `npm install` + `npm start`** — no seeding step needed.
 
-Bütün hesablar yalnız bu lab üçündür. **Başqa yerdə istifadə etməyin.**
+| Role | Portal / login URL | Email | Password |
+|------|--------------------|-------|----------|
+| **Admin** | `/auth/admin/login` | `admin@shopnexus.cyou` | `7#8R5T#*ww9Aq*` |
+| **Customer** | `/auth/login` | `customer@shopnexus.cyou` | `v5sr6tEGQn*!KT` |
+| **Vendor** (demo store) | `/auth/vendor/login` | `vendor@shopnexus.cyou` | `ZHTsN&$3dnFKU!` |
+| Vendor — Apple Store Baku | `/auth/vendor/login` | `apple@shopnexus.cyou` | `Qv&XSxAvN*G*8m` |
+| Vendor — Samsung Store | `/auth/vendor/login` | `samsung@shopnexus.cyou` | `E5yEtgD%Xh#Vc!` |
+| Vendor — Xiaomi Store | `/auth/vendor/login` | `xiaomi@shopnexus.cyou` | `eS&kfXpCa3S#8L` |
+| Vendor — PC Arena Pro | `/auth/vendor/login` | `pcarena@shopnexus.cyou` | `tsp@Gk5rN3h@xn` |
+| Vendor — SportHub | `/auth/vendor/login` | `sporthub@shopnexus.cyou` | `^cLNG8e*yfdtf6` |
+| Vendor — Moda Avenue | `/auth/vendor/login` | `moda@shopnexus.cyou` | `t^GMe8aF8&6rX3` |
+| Vendor — Nordic Home | `/auth/vendor/login` | `home@shopnexus.cyou` | `@T!^ZLEq^d8$KV` |
+| Vendor — Beauty Lab | `/auth/vendor/login` | `beauty@shopnexus.cyou` | `xW&h3Et%4^S6JN` |
 
-| Rol | Email | Şifrə |
-|---|---|---|
-| Admin | `admin@shopnexus.cyou` | `7#8R5T#*ww9Aq*` |
-| Customer | `customer@shopnexus.cyou` | `v5sr6tEGQn*!KT` |
-| Vendor | `vendor@shopnexus.cyou` | `ZHTsN&$3dnFKU!` |
-| Vendor | `apple@shopnexus.cyou` | `Qv&XSxAvN*G*8m` |
-| Vendor | `beauty@shopnexus.cyou` | `xW&h3Et%4^S6JN` |
-| Vendor | `moda@shopnexus.cyou` | `t^GMe8aF8&6rX3` |
-| Vendor | `home@shopnexus.cyou` | `@T!^ZLEq^d8$KV` |
-| Vendor | `pcarena@shopnexus.cyou` | `tsp@Gk5rN3h@xn` |
-| Vendor | `samsung@shopnexus.cyou` | `E5yEtgD%Xh#Vc!` |
-| Vendor | `sporthub@shopnexus.cyou` | `^cLNG8e*yfdtf6` |
-| Vendor | `xiaomi@shopnexus.cyou` | `eS&kfXpCa3S#8L` |
+Full URLs (default port): `http://localhost:3000/auth/admin/login`,
+`http://localhost:3000/auth/login`, `http://localhost:3000/auth/vendor/login`.
 
-Giriş yolları (lokal):
+> Passwords contain symbols (`#`, `$`, `&`, `*`, `!`, `^`, `@`). Copy-paste them exactly —
+> do not retype them by hand.
 
-- Customer: `http://localhost:3000/auth/login`
-- Vendor: `http://localhost:3000/auth/vendor/login`
-- Admin: `http://localhost:3000/auth/admin/login`
+**After reseeding**, all demo accounts get the `DEMO_ACCOUNT_PASSWORD` value from `.env`
+instead of the individual passwords above.
 
-## Lazım gələrsə: datanı sıfırlamaq
+---
 
-Layihə ilə birlikdə hazır `data/` bazası gəlir. Təcrübələrdən sonra ilkin vəziyyətə qaytarmaq üçün (ilk commit-dən sonra):
+## Usage / Getting Started
+
+1. Start the app with `npm start` and open **<http://localhost:3000>**.
+2. Browse the storefront anonymously — catalog, product pages, search and filters.
+3. Log in as the **Customer** at `/auth/login` and walk through the shopping flow:
+   cart → coupon → checkout (wallet or card) → OTP → order → receipt/QR.
+4. Log in as a **Vendor** at `/auth/vendor/login` and open `/vendor/dashboard`:
+   products, questions, coupons and store settings.
+5. Log in as the **Admin** at `/auth/admin/login` and open `/admin`:
+   users, vendors, coupons, refunds, payments and platform settings.
+6. Compare what each role can reach. Watch the requests in your proxy of choice
+   (Burp Suite, ZAP, DevTools) and try to move outside your own account.
+
+Handy starting routes:
+
+| Route | What it is |
+|-------|------------|
+| `/` | Storefront home |
+| `/products` | Catalog with search and filters |
+| `/cart` | Cart and coupon application |
+| `/checkout` | Checkout flow |
+| `/orders` | Customer order history |
+| `/wallet` | Wallet, top-up, gift cards |
+| `/vendor/dashboard` | Vendor console |
+| `/admin` | Admin console |
+
+> **Use `http://localhost:3000`, not a LAN IP such as `192.168.x.x`.**
+> Auth cookies are issued with the `Secure` flag, so browsers will not store them over
+> plain HTTP on a non-localhost host — you would end up in a login loop.
+
+### Resetting the lab
+
+The shipped `data/` directory is the "clean" starting state. After experimenting:
 
 ```bash
 git restore data
 ```
 
-Bazadan tamamilə sıfırdan başlamaq istəsəniz, `data/` içindəki `*.db` fayllarını silib yenidən seed edin:
+To rebuild the catalog, orders and promotions from scratch (users are kept):
 
 ```bash
 npm run seed
+npm run seed:marketplace   # rebuild the 8 demo vendor stores
 ```
 
-> Qeyd: `seed` bütün hesablar üçün `.env`-dəki `DEMO_ACCOUNT_PASSWORD` dəyərini istifadə edir,
-> yəni yuxarıdakı fərdi şifrələr yalnız hazır `data/` bazası ilə işləyir.
+Both seed scripts require `DEMO_ACCOUNT_PASSWORD` in `.env`.
 
-## Challenge-lər
+---
 
-| # | Çətinlik | Zəiflik | Endpoint |
-|---|---|---|---|
-| E1 | Easy | Open Redirect | `POST /lang/:code` |
-| E2 | Easy | OTP Rate Limiting | `POST /checkout/otp` |
-| E3 | Easy | Review IDOR | `POST /reviews/:id/delete` |
-| E4 | Easy | Coupon Validation (business logic) | `POST /vendor/coupons`, `POST /admin/coupons` |
-| E5 | Easy | Hidden / Debug Endpoints | `GET /debug/*`, `GET /admin/system` |
-| M6 | Medium | CSRF | `POST /user/profile`, `POST /user/address` |
-| M7 | Medium | Mass Assignment | `POST /user/profile` |
-| M8 | Medium | First-order Coupon Sayım Xətası | `POST /orders` |
-| M9 | Medium | NoSQL / Query Injection | `POST /orders/search` |
-| M10 | Medium | Cross-Portal / JWT Role Mismatch | auth axını |
-| H11 | Hard | Support Ticket Authorization | `POST /support/:id/reply` |
-| H12 | Hard | Host Header Injection | `GET /receipts/:token` |
-| H13 | Hard | Refund State-Machine Confusion | `POST /admin/refunds/:id/approve` |
-| H14 | Hard | Gift Card Race Condition | `POST /wallet/redeem-giftcard` |
-| H15 | Hard | Vendor Isolation (BOLA) | `POST /vendor/questions/:id/answer` |
-
-Ətraflı brief: [`CHALLENGES.md`](CHALLENGES.md)
-
-## Fayl strukturu
+## Project Structure
 
 ```
-app.js                 # Express tətbiqi, route mount-ları
-config/                # DB, JWT, multer, public URL konfiqurasiyası
-controllers/           # biznes məntiqi
-routes/                # Express router-lər
-models/                # NeDB modelləri
-services/              # ödəniş, qəbz, qiymət, bildiriş xidmətləri
-middlewares/           # auth, i18n, session
-views/                 # EJS şablonları
-public/                # statik fayllar və upload-lar
-data/                  # NeDB bazası (ilkin demo vəziyyəti)
-scripts/               # seed, miqrasiya və yoxlama skriptləri
-locales/               # AZ / EN / RU tərcümələr
+app.js                 Express app, middleware and route mounts
+config/                database, JWT, session, multer, public-URL configuration
+controllers/           request handlers / business logic
+routes/                Express routers (customer, vendor, admin, debug)
+models/                NeDB data models
+services/              payments, receipts, pricing, notifications, auth sessions
+middlewares/           auth, i18n, upload and session middleware
+views/                 EJS templates
+public/                static assets and uploaded files
+data/                  NeDB database files (seeded demo state)
+scripts/               seed, migration and static-check scripts
+locales/               AZ / EN / RU translations
+seed.js                base demo data (users, catalog, categories)
 ```
 
-## Təhlükəsizlik qeydləri
+---
 
-- `.env` faylındakı secret-lər **yalnız lab** üçündür (`development-only-*`).
-- `PUBLIC_BASE_URL` boş buraxılıb ki, qəbz/QR linkləri lokal host ilə işləsin.
-- Tətbiq `data/` qovluğunda NeDB faylları yazır. Bu fayllar sizin lokal vəziyyətinizdir.
-- `.mcp.json`, `.env`, `node_modules/` və daxili qeydlər repoya daxil edilmir.
-- Bu layihəni real məlumat, real istifadəçi hesabları və ya real secret-lərlə **heç vaxt** işlətməyin.
+## Troubleshooting
 
-## Lisenziya
+| Symptom | Fix |
+|---------|-----|
+| Login redirects back to the login page | Open the app via `http://localhost:3000`, not a LAN IP. Clear cookies for `localhost`. |
+| `EADDRINUSE` on start | Another process is using the port — set a different `PORT` in `.env`. |
+| Empty catalog or vendor dashboards | Run `npm run seed` and `npm run seed:marketplace`. |
+| Stale/locked data | Stop the server, delete `data/*.db~` temp files, restart. |
+| `npm install` issues | Use Node.js 18+ and delete `node_modules` + `package-lock.json` only if you know what you are doing. |
 
-[MIT](LICENSE) — yalnız təhsil və təhlükəsizlik təlimi məqsədilə.
+---
 
-## GitHub-a yükləmə
+## ⚠️ Warning / Disclaimer
 
-```bash
-git remote add origin https://github.com/<istifadeci>/shopnexus-lab.git
-git push -u origin main
-```
+This project is **intentionally insecure by design**. It exists to be attacked.
 
+- Run it **only** on your own machine or in a disposable, isolated VM/container.
+- **Never** deploy it to production, a public VPS, a shared host, or any network reachable
+  by untrusted users.
+- **Never** reuse the demo credentials, JWT/session secrets, or database files in another
+  project.
+- **Never** point these techniques at systems you do not own or have explicit written
+  permission to test. Unauthorized access to computer systems is illegal in most
+  jurisdictions.
+- The demo images, brands and store names are fictional/AI-generated placeholders used for
+  layout purposes only; no affiliation or endorsement is implied.
+
+The author accepts **no liability** for damage, data loss or legal consequences resulting
+from misuse of this code.
+
+---
+
+## License
+
+[MIT](LICENSE) — for educational and security-training use only.

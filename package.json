@@ -4,6 +4,10 @@
   "description": "ShopNexus — intentionally vulnerable multi-vendor e-commerce web lab (Node.js/Express/NeDB)",
   "main": "app.js",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aliyev-hasan/shopnexus-lab.git"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
