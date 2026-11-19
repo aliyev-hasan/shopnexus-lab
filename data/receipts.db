@@ -1,0 +1,2 @@
+{"$$indexCreated":{"fieldName":"public_token","unique":true,"sparse":false}}
+{"$$indexCreated":{"fieldName":"operation_key","unique":true,"sparse":false}}

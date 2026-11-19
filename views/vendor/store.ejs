@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= vendor.store_name %> | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Mağaza başlığı -->
+    <section class="relative mb-8 overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-sm">
+      <% if (vendor.store_banner) { %>
+        <div class="absolute inset-0 bg-cover bg-center opacity-60" style="background-image: url('<%= vendor.store_banner %>');"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/30"></div>
+      <% } else { %>
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-950 via-teal-950 to-slate-900"></div>
+      <% } %>
+      <div class="relative flex flex-col gap-6 p-6 sm:p-9 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center gap-5">
+          <% if (vendor.store_logo) { %>
+            <img src="<%= vendor.store_logo %>" alt="<%= vendor.store_name %> loqosu" class="h-20 w-20 rounded-full border-4 border-white/20 object-cover shadow-xl sm:h-24 sm:w-24">
+          <% } else { %>
+            <div class="grid h-20 w-20 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 sm:h-24 sm:w-24"><i class="fa-solid fa-store text-3xl text-teal-200"></i></div>
+          <% } %>
+          <div>
+            <p class="mb-2 text-sm font-black uppercase tracking-[.2em] text-teal-300"><i class="fa-solid fa-shop mr-1"></i> Satıcı mağazası</p>
+            <h1 class="text-3xl font-black tracking-tight sm:text-4xl"><%= vendor.store_name %></h1>
+            <p class="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base"><%= vendor.store_description || 'Bu satıcı hələ mağaza təsviri əlavə etməyib.' %></p>
+            <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-300">
+              <span><i class="fa-solid fa-box mr-1.5 text-teal-300"></i><%= productCount %> məhsul</span>
+              <% if (avgRating > 0) { %>
+                <span class="text-amber-300"><% for(let i=1;i<=5;i++){ %><i class="fa-star <%= i <= Math.round(avgRating) ? 'fa-solid' : 'fa-regular' %>"></i><% } %> <span class="text-slate-300 ml-1"><%= avgRating.toFixed(1) %> (<%= totalReviews %> rəy)</span></span>
+              <% } %>
+              <% if (vendor.created_at) { %>
+                <span><i class="fa-solid fa-calendar mr-1.5 text-teal-300"></i>Üzv: <%= new Date(vendor.created_at).toLocaleDateString('az-AZ', { year: 'numeric', month: 'long' }) %></span>
+              <% } %>
+              <% if ((vendor.status || 'ACTIVE') === 'SUSPENDED') { %>
+                <span class="px-3 py-1 rounded-full bg-rose-500/20 text-rose-200 font-bold text-xs">Mağaza müvəqqəti dayandırılıb</span>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        <% if (user && user.role === 'Customer') { %>
+          <a href="/vendors/<%= vendor.slug || vendor._id %>/contact" class="relative inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-2xl bg-white/10 border border-white/20 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"><i class="fa-solid fa-comments"></i> Satıcı ilə əlaqə</a>
+        <% } else if (user && user.role === 'Vendor' && user.id === vendor.user_id) { %>
+          <a href="/vendor/customer-support" class="relative inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-2xl bg-white/10 border border-white/20 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"><i class="fa-solid fa-comments"></i> Müştəri mesajları</a>
+        <% } else if (!user) { %>
+          <a href="/auth/login" class="relative inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-2xl bg-white/10 border border-white/20 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"><i class="fa-solid fa-life-ring"></i> Satıcı ilə əlaqə</a>
+        <% } %>
+      </div>
+    </section>
+
+    <% if ((vendorCoupons || []).length) { %>
+    <section class="mb-8">
+      <h2 class="mb-4 text-xl font-black"><i class="fa-solid fa-ticket text-teal-600 mr-2"></i>Mağaza kuponları</h2>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <% vendorCoupons.forEach(c => { %>
+          <div class="rounded-2xl border-2 border-dashed border-teal-300 bg-teal-50 p-4">
+            <p class="font-black text-lg text-teal-700"><i class="fa-solid fa-tag mr-1"></i><%= c.code %></p>
+            <p class="text-sm text-teal-800 mt-1"><%= c.discount_type === 'percentage' ? c.discount_value + '% endirim' : c.discount_type === 'fixed' ? c.discount_value + ' ₼ endirim' : c.discount_type === 'free_shipping' ? 'Pulsuz çatdırılma' : 'İlk sifariş endirimi' %></p>
+            <% if (c.min_order_value) { %><p class="text-xs text-teal-600 mt-1">Min. sifariş: <%= c.min_order_value %> ₼</p><% } %>
+            <% if (c.expiry_date) { %><p class="text-xs text-teal-600 mt-1">Bitmə tarixi: <%= new Date(c.expiry_date).toLocaleDateString('az-AZ') %></p><% } %>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+    <% } %>
+
+    <div class="grid lg:grid-cols-[280px_1fr] gap-8">
+      <aside class="bg-white rounded-[1.75rem] p-6 shadow-sm border border-slate-200 h-fit sticky top-24">
+        <h2 class="font-black text-xl mb-5"><i class="fa-solid fa-sliders mr-2 text-teal-600"></i>Filter</h2>
+        <form class="space-y-5" action="/vendors/<%= vendor.slug || vendor._id %>">
+          <input name="search" value="<%= query.search || '' %>" placeholder="Mağazada axtar..." class="w-full rounded-2xl bg-slate-100 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-500">
+          <% if (categories.length) { %>
+          <div>
+            <label class="font-bold text-sm">Kateqoriya</label>
+            <select name="category" class="mt-2 w-full rounded-2xl bg-slate-100 px-4 py-3">
+              <option value="">Hamısı</option>
+              <% categories.forEach(c => { %><option value="<%= c %>" <%= query.category===c?'selected':'' %>><%= c %></option><% }) %>
+            </select>
+          </div>
+          <% } %>
+          <div>
+            <label class="font-bold text-sm">Qiymət aralığı</label>
+            <div class="grid grid-cols-2 gap-3 mt-2"><input name="min" value="<%= query.min || '' %>" placeholder="Min" class="rounded-2xl bg-slate-100 px-4 py-3"><input name="max" value="<%= query.max || '' %>" placeholder="Max" class="rounded-2xl bg-slate-100 px-4 py-3"></div>
+          </div>
+          <select name="rating" class="w-full rounded-2xl bg-slate-100 px-4 py-3"><option value="">Bütün reytinqlər</option><option value="4" <%= query.rating==='4'?'selected':'' %>>4+ ulduz</option><option value="3" <%= query.rating==='3'?'selected':'' %>>3+ ulduz</option><option value="2" <%= query.rating==='2'?'selected':'' %>>2+ ulduz</option></select>
+          <select name="sort" class="w-full rounded-2xl bg-slate-100 px-4 py-3"><option value="">Sıralama</option><option value="price-asc" <%= query.sort==='price-asc'?'selected':'' %>>Qiymət artan</option><option value="price-desc" <%= query.sort==='price-desc'?'selected':'' %>>Qiymət azalan</option><option value="newest" <%= query.sort==='newest'?'selected':'' %>>Ən yenilər</option></select>
+          <button class="w-full rounded-2xl bg-slate-950 text-white font-black py-3">Tətbiq et</button>
+        </form>
+      </aside>
+      <section>
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+          <div>
+            <p class="text-sm font-black uppercase tracking-wider text-teal-600">Mağaza məhsulları</p>
+            <h2 class="text-3xl font-black"><%= products.length %> məhsul tapıldı</h2>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-6"><% (products || []).forEach(product => { %><%- include('../partials/product-card', { product }) %><% }) %></div>
+        <% if (!products || products.length === 0) { %>
+          <div class="bg-white rounded-3xl p-10 text-center"><i class="fa-solid fa-box-open text-3xl text-slate-300 mb-3"></i><p class="font-black text-lg">Bu mağazada məhsul tapılmadı.</p><p class="text-slate-500 text-sm mt-1">Filtrləri təmizləyib yenidən cəhd edin.</p><a href="/vendors/<%= vendor.slug || vendor._id %>" class="inline-block mt-4 text-teal-600 font-bold">Filtrləri təmizlə</a></div>
+        <% } %>
+      </section>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>

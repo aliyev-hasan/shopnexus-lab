@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="<%= currentLang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= t('admin_support.title') %> | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <div class="flex">
+    <%- include('../partials/admin-sidebar', { current: 'support' }) %>
+    <main class="min-w-0 flex-1 p-5 md:p-8">
+      <h1 class="text-3xl font-black mb-2"><%= t('admin_support.title') %></h1>
+      <p class="text-slate-500 mb-6"><%= t('admin_support.subtitle') %></p>
+
+      <form method="GET" action="/admin/support" class="bg-white border rounded-2xl p-4 mb-6 flex flex-wrap gap-3 items-center">
+        <select name="role" class="rounded-xl border px-3 py-2">
+          <option value=""><%= t('admin_support.role_both') %></option>
+          <option value="Customer" <%= filters.role==='Customer'?'selected':'' %>><%= t('admin_support.role_customer') %></option>
+          <option value="Vendor" <%= filters.role==='Vendor'?'selected':'' %>><%= t('admin_support.role_vendor') %></option>
+        </select>
+        <select name="category" class="rounded-xl border px-3 py-2">
+          <option value=""><%= t('admin_support.all_categories') %></option>
+          <% ticketCategories.forEach(c => { %><option value="<%= c %>" <%= filters.category===c?'selected':'' %>><%= c %></option><% }) %>
+        </select>
+        <select name="status" class="rounded-xl border px-3 py-2">
+          <option value=""><%= t('admin_support.all_statuses') %></option>
+          <option value="OPEN" <%= filters.status==='OPEN'?'selected':'' %>><%= t('admin_support.status_open') %></option>
+          <option value="ANSWERED" <%= filters.status==='ANSWERED'?'selected':'' %>><%= t('admin_support.status_answered') %></option>
+          <option value="CLOSED" <%= filters.status==='CLOSED'?'selected':'' %>><%= t('admin_support.status_closed') %></option>
+        </select>
+        <button class="rounded-xl bg-slate-950 text-white px-5 py-2 font-bold"><%= t('admin_support.filter_button') %></button>
+        <a href="/admin/support" class="text-slate-500 font-bold text-sm"><%= t('admin_support.reset_button') %></a>
+      </form>
+
+      <div class="space-y-4">
+        <% if (!tickets.length) { %>
+          <div class="bg-white border rounded-2xl p-8 text-center text-slate-500 font-bold"><%= t('admin_support.no_tickets') %></div>
+        <% } %>
+        <% tickets.forEach(t2 => { %>
+          <div class="bg-white border rounded-2xl p-5">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              <span class="px-2 py-1 rounded-full text-xs font-bold <%= t2.status==='ANSWERED'?'bg-emerald-100 text-emerald-700':t2.status==='CLOSED'?'bg-slate-200 text-slate-600':'bg-amber-100 text-amber-700' %>"><%= t2.status==='ANSWERED'?t('admin_support.status_answered'):t2.status==='CLOSED'?t('admin_support.status_closed'):t('admin_support.status_open') %></span>
+              <span class="px-2 py-1 rounded-full text-xs font-bold <%= t2.role==='Vendor'?'bg-purple-100 text-purple-700':'bg-sky-100 text-sky-700' %>"><%= t2.role==='Vendor'?t('admin_support.role_vendor'):t('admin_support.role_customer') %></span>
+              <span class="px-2 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700"><%= t2.category %></span>
+              <span class="text-slate-400 text-xs">#<%= t2._id.slice(0,8) %> · <%= t2.requester_name %></span>
+            </div>
+            <% if (t2.order_id) { %><p class="text-xs text-slate-500 mb-2"><i class="fa-solid fa-receipt mr-1"></i><%= t('admin_support.order_label') %> <span class="font-mono"><%= t2.order_id %></span></p><% } %>
+            <% if (t2.product_id) { %><p class="text-xs text-slate-500 mb-2"><i class="fa-solid fa-box mr-1"></i><%= t('admin_support.product_label') %> <a href="/products/<%= t2.product_id %>" target="_blank" class="text-teal-600 font-bold hover:underline"><%= t2.product_id %></a></p><% } %>
+            <div class="space-y-2 mb-3">
+              <% (t2.messages||[]).forEach(m => { %>
+                <div class="rounded-xl p-3 <%= m.sender==='admin'?'bg-teal-50':'bg-slate-50' %>">
+                  <p class="text-xs font-bold text-slate-500 mb-1"><%= m.sender==='admin'?t('admin_support.admin_label'):t2.requester_name %> · <%= new Date(m.created_at).toLocaleString(dateLocale) %></p>
+                  <p class="text-sm text-slate-700"><%= m.text %></p>
+                </div>
+              <% }) %>
+            </div>
+            <% if (t2.status !== 'CLOSED') { %>
+              <form action="/admin/support/<%= t2._id %>/reply" method="POST" class="flex flex-col sm:flex-row gap-2 mb-2">
+                <textarea name="message" required placeholder="<%= t('admin_support.reply_placeholder') %>" class="flex-1 rounded-xl border px-3 py-2 h-16"></textarea>
+                <button class="rounded-xl bg-teal-600 text-white px-4 py-2 font-bold text-sm whitespace-nowrap"><%= t('admin_support.reply_button') %></button>
+              </form>
+              <form action="/admin/support/<%= t2._id %>/close" method="POST"><button class="text-sm font-bold text-rose-600"><%= t('admin_support.close_button') %></button></form>
+            <% } else { %>
+              <form action="/admin/support/<%= t2._id %>/reopen" method="POST"><button class="text-sm font-bold text-teal-600"><%= t('admin_support.reopen_button') %></button></form>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </main>
+  </div>
+  <%- include('../partials/footer') %>
+</body>
+</html>

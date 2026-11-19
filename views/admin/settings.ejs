@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tənzimləmələr | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <div class="flex">
+    <%- include('../partials/admin-sidebar', { current: 'settings' }) %>
+    <main class="min-w-0 flex-1 p-5 md:p-8">
+      <div class="mx-auto max-w-3xl">
+        <div class="mb-8">
+          <p class="text-sm font-black uppercase tracking-wider text-teal-600">Admin paneli</p>
+          <h1 class="mt-1 text-3xl font-black">Tənzimləmələr</h1>
+        </div>
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div class="mb-7 flex items-start gap-4">
+            <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-teal-50 text-teal-600"><i class="fa-solid fa-percent"></i></div>
+            <div><h2 class="text-xl font-black">Komissiya faizi</h2><p class="mt-1 text-sm text-slate-500">Platforma komissiyasını bütün vendorlar üçün idarə edin.</p></div>
+          </div>
+          <form action="/admin/settings/commission" method="POST" class="space-y-5">
+            <div>
+              <label for="commission_rate" class="mb-2 block text-sm font-black text-slate-700">Platforma komissiyası (%)</label>
+              <div class="relative"><input id="commission_rate" name="commission_rate" type="number" step="0.1" min="0" max="100" value="<%= commissionPercent %>" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 font-bold outline-none transition focus:border-teal-400 focus:bg-white focus:ring-4 focus:ring-teal-500/10"><span class="pointer-events-none absolute inset-y-0 right-4 grid place-items-center font-black text-slate-400">%</span></div>
+              <p class="mt-2 text-sm text-slate-500">Bu faiz hər satışdan platformaya ödənilir və bütün vendor-lara tətbiq olunur.</p>
+            </div>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-6 py-3 font-black text-white transition hover:bg-teal-700"><i class="fa-solid fa-floppy-disk"></i>Yadda saxla</button>
+          </form>
+        </section>
+
+        <section class="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div class="mb-7 flex items-start gap-4">
+            <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-gift"></i></div>
+            <div><h2 class="text-xl font-black">Cashback faizi</h2><p class="mt-1 text-sm text-slate-500">Sifariş çatdırıldıqda müştəriyə qaytarılan cashback faizi.</p></div>
+          </div>
+          <form action="/admin/settings/cashback" method="POST" class="space-y-5">
+            <div>
+              <label for="cashback_rate" class="mb-2 block text-sm font-black text-slate-700">Cashback (%)</label>
+              <div class="relative"><input id="cashback_rate" name="cashback_rate" type="number" step="0.1" min="0" max="100" value="<%= typeof cashbackPercent !== 'undefined' ? cashbackPercent : 3 %>" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 font-bold outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"><span class="pointer-events-none absolute inset-y-0 right-4 grid place-items-center font-black text-slate-400">%</span></div>
+              <p class="mt-2 text-sm text-slate-500">Sifariş statusu DELIVERED olduqda bu faiz cüzdana əlavə olunur.</p>
+            </div>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 font-black text-white transition hover:bg-emerald-700"><i class="fa-solid fa-floppy-disk"></i>Yadda saxla</button>
+          </form>
+        </section>
+
+        <section class="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div class="mb-7 flex items-start gap-4">
+            <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-indigo-50 text-indigo-600"><i class="fa-solid fa-gears"></i></div>
+            <div><h2 class="text-xl font-black">Sifariş Avtomatlaşdırması</h2><p class="mt-1 text-sm text-slate-500">PAID → PROCESSING → SHIPPED → DELIVERED keçidlərini avtomatik idarə edin. PENDING PAYMENT → PAID heç vaxt taymerlə deyil, yalnız uğurlu ödənişdən sonra baş verir.</p></div>
+          </div>
+          <form action="/admin/settings/order-automation" method="POST" class="space-y-5">
+            <label class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <input type="checkbox" name="enabled" <%= orderAutomation && orderAutomation.enabled ? 'checked' : '' %> class="h-5 w-5 rounded accent-indigo-600">
+              <span class="font-black text-slate-700">Avtomatlaşdırmanı aktivləşdir</span>
+            </label>
+
+            <div>
+              <label for="unit" class="mb-2 block text-sm font-black text-slate-700">Vahid</label>
+              <select id="unit" name="unit" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10">
+                <% ['seconds','minutes','hours'].forEach(u => { %>
+                  <option value="<%= u %>" <%= orderAutomation && orderAutomation.unit === u ? 'selected' : '' %>><%= u === 'seconds' ? 'Saniyə' : (u === 'minutes' ? 'Dəqiqə' : 'Saat') %></option>
+                <% }) %>
+              </select>
+              <p class="mt-2 text-sm text-slate-500">Sürətli lokal test üçün saniyə tövsiyə olunur.</p>
+            </div>
+
+            <div class="grid gap-5 sm:grid-cols-3">
+              <div>
+                <label for="delay_paid_to_processing" class="mb-2 block text-sm font-black text-slate-700">PAID → PROCESSING</label>
+                <input id="delay_paid_to_processing" name="delay_paid_to_processing" type="number" step="1" min="0" value="<%= orderAutomation ? orderAutomation.delay_paid_to_processing : 30 %>" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10">
+              </div>
+              <div>
+                <label for="delay_processing_to_shipped" class="mb-2 block text-sm font-black text-slate-700">PROCESSING → SHIPPED</label>
+                <input id="delay_processing_to_shipped" name="delay_processing_to_shipped" type="number" step="1" min="0" value="<%= orderAutomation ? orderAutomation.delay_processing_to_shipped : 40 %>" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10">
+              </div>
+              <div>
+                <label for="delay_shipped_to_delivered" class="mb-2 block text-sm font-black text-slate-700">SHIPPED → DELIVERED</label>
+                <input id="delay_shipped_to_delivered" name="delay_shipped_to_delivered" type="number" step="1" min="0" value="<%= orderAutomation ? orderAutomation.delay_shipped_to_delivered : 60 %>" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10">
+              </div>
+            </div>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-6 py-3 font-black text-white transition hover:bg-indigo-700"><i class="fa-solid fa-floppy-disk"></i>Yadda saxla</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+  <%- include('../partials/footer') %>
+</body>
+</html>

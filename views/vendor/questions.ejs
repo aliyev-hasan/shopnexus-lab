@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Məhsul Sualları | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-14">
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div><p class="mb-2 text-sm font-black uppercase tracking-[.2em] text-teal-600">Satıcı paneli</p><h1 class="text-4xl font-black tracking-tight">Məhsul Sualları</h1><p class="mt-2 text-slate-500">Müştərilərin <b><%= vendor.store_name %></b> mağazasının məhsulları haqqında verdiyi sualları cavablandırın.</p></div>
+      <a href="/vendor/dashboard" class="inline-flex items-center gap-2 font-black text-teal-600 hover:text-teal-800"><i class="fa-solid fa-arrow-left"></i> Dashboard-a qayıt</a>
+    </div>
+
+    <form method="GET" action="/vendor/questions" class="bg-white border rounded-2xl p-4 mb-6 flex flex-wrap gap-3 items-center">
+      <select name="status" class="rounded-xl border px-3 py-2">
+        <option value="">Bütün statuslar</option>
+        <option value="PENDING" <%= filters.status==='PENDING'?'selected':'' %>>Cavabsız</option>
+        <option value="ANSWERED" <%= filters.status==='ANSWERED'?'selected':'' %>>Cavablanıb</option>
+        <option value="HANDLED" <%= filters.status==='HANDLED'?'selected':'' %>>Həll olunub</option>
+      </select>
+      <button class="rounded-xl bg-slate-950 text-white px-5 py-2 font-bold">Filtrlə</button>
+      <a href="/vendor/questions" class="text-slate-500 font-bold text-sm">Sıfırla</a>
+    </form>
+
+    <div class="space-y-4">
+      <% if (!questions.length) { %>
+        <div class="bg-white border rounded-2xl p-8 text-center text-slate-500 font-bold">Heç bir sual tapılmadı.</div>
+      <% } %>
+      <% questions.forEach(q => { %>
+        <div class="bg-white border rounded-2xl p-5">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2 py-1 rounded-full text-xs font-bold <%= q.status==='ANSWERED'?'bg-emerald-100 text-emerald-700':q.status==='HANDLED'?'bg-slate-200 text-slate-600':'bg-amber-100 text-amber-700' %>">
+              <%= q.status==='ANSWERED'?'Cavablanıb':q.status==='HANDLED'?'Həll olunub':'Cavabsız' %>
+            </span>
+            <% if (q.status === 'ANSWERED' && !q.visible) { %><span class="px-2 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700">Admin tərəfindən gizlədilib</span><% } %>
+            <span class="text-slate-400 text-xs"><%= new Date(q.created_at).toLocaleString('az-AZ') %></span>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-2 text-sm text-slate-500 mb-3">
+            <div><i class="fa-solid fa-box mr-1"></i><a href="/products/<%= q.product_id %>" target="_blank" class="text-teal-600 font-bold hover:underline"><%= q.product_name %></a></div>
+            <div><i class="fa-solid fa-user mr-1"></i><%= q.customer_name %></div>
+          </div>
+          <p class="font-bold text-slate-800"><i class="fa-solid fa-circle-question text-teal-600 mr-2"></i>Sual</p>
+          <p class="text-slate-600 mb-4"><%= q.question_text %></p>
+
+          <% if (q.status === 'ANSWERED') { %>
+            <p class="font-bold text-slate-800"><i class="fa-solid fa-reply text-emerald-600 mr-2"></i>Cavab <span class="text-slate-400 font-normal text-xs">(<%= q.answered_by %>)</span></p>
+            <p class="text-slate-600"><%= q.answer_text %></p>
+          <% } else if (q.status === 'PENDING') { %>
+            <form action="/vendor/questions/<%= q._id %>/answer" method="POST" class="flex flex-col sm:flex-row gap-2">
+              <textarea name="answerText" required placeholder="Cavabınızı yazın..." class="flex-1 rounded-xl border px-3 py-2 h-20"></textarea>
+              <button class="rounded-xl bg-teal-600 text-white px-4 py-2 font-bold text-sm whitespace-nowrap self-start">Cavab göndər</button>
+            </form>
+          <% } else { %>
+            <p class="text-slate-400 text-sm italic">Bu sual admin tərəfindən cavabsız həll olunmuş kimi işarələnib.</p>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

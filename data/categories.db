@@ -1,0 +1,7 @@
+{"_id":"cat-accessories","name":"Aksessuar","description":"Saat, çanta və aksesuarlar","created_at":"2026-08-13T18:53:13.810Z"}
+{"_id":"cat-books","name":"Kitablar","description":"Kitablar və nəşrlər","created_at":"2026-08-13T18:53:13.811Z"}
+{"_id":"cat-cosmetics","name":"Kosmetika","description":"Kosmetika və şəxsi baxım","created_at":"2026-08-13T18:53:13.810Z"}
+{"_id":"cat-electronics","name":"Elektronika","description":"Smartfon, laptop və elektron cihazlar","created_at":"2026-08-13T18:53:13.810Z"}
+{"_id":"cat-fashion","name":"Geyim","description":"Geyim və ayaqqabı","created_at":"2026-08-13T18:53:13.810Z"}
+{"_id":"cat-home","name":"Ev əşyaları","description":"Ev və ofis üçün məhsullar","created_at":"2026-08-13T18:53:13.810Z"}
+{"_id":"cat-sports","name":"İdman","description":"İdman avadanlıqları və geyim","created_at":"2026-08-13T18:53:13.810Z"}

@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="az"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title><%= vendor.store_name %></title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></head><body class="bg-slate-50 text-slate-900"><%- include('../partials/navbar', { user: user || null }) %><div class="flex"><%- include('../partials/admin-sidebar',{current:'vendors'}) %><main class="flex-1 p-5 md:p-8 min-w-0">
+<a href="/admin/vendors" class="text-sm font-bold text-slate-500 hover:text-teal-600"><i class="fa-solid fa-arrow-left mr-1"></i>Satıcılara qayıt</a>
+
+<div class="mt-4 bg-white rounded-3xl border p-6 flex flex-wrap items-center gap-5 justify-between">
+  <div class="flex items-center gap-4">
+    <% if(vendor.store_logo){ %><img src="<%= vendor.store_logo %>" class="h-16 w-16 rounded-2xl object-cover"><% } else { %><div class="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-store text-slate-400 text-2xl"></i></div><% } %>
+    <div>
+      <h1 class="text-2xl font-black"><%= vendor.store_name %></h1>
+      <p class="text-slate-500 text-sm"><%= vendor.store_description || 'Təsvir yoxdur' %></p>
+      <p class="text-xs text-slate-400 mt-1">Sahib: <%= owner ? (owner.full_name + ' · ' + owner.email) : '—' %></p>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="px-3 py-1 rounded-full text-xs font-bold <%= (vendor.status||'ACTIVE')==='SUSPENDED'?'bg-rose-100 text-rose-700':'bg-emerald-100 text-emerald-700' %>"><%= (vendor.status||'ACTIVE')==='SUSPENDED'?'Dayandırılıb':'Aktiv' %></span>
+    <form action="/admin/vendors/<%= vendor._id %>/toggle-featured" method="POST"><button class="rounded-xl border border-amber-300 px-4 py-2 text-sm font-bold <%= vendor.featured?'bg-amber-100 text-amber-800':'text-amber-700' %>"><i class="fa-solid fa-star mr-1"></i><%= vendor.featured?'Seçilmişdən çıxar':'Seçilmiş et' %></button></form>
+    <form action="/admin/vendors/<%= vendor._id %>/toggle-status" method="POST"><button class="rounded-xl border px-4 py-2 font-bold text-sm <%= (vendor.status||'ACTIVE')==='SUSPENDED'?'text-emerald-600 border-emerald-200':'text-rose-600 border-rose-200' %>"><%= (vendor.status||'ACTIVE')==='SUSPENDED'?'Aktivləşdir':'Dayandır' %></button></form>
+  </div>
+</div>
+
+<div class="mt-6 grid gap-4 sm:grid-cols-3">
+  <div class="bg-white rounded-2xl border p-5"><p class="text-xs font-bold text-slate-400 uppercase">Məhsullar</p><p class="text-3xl font-black mt-1"><%= products.length %></p></div>
+  <div class="bg-white rounded-2xl border p-5"><p class="text-xs font-bold text-slate-400 uppercase">Sifarişlər (gəlirli)</p><p class="text-3xl font-black mt-1"><%= totalOrders %></p></div>
+  <div class="bg-white rounded-2xl border p-5"><p class="text-xs font-bold text-slate-400 uppercase">Ümumi satış</p><p class="text-3xl font-black mt-1"><%= Number(totalSales).toFixed(2) %> ₼</p></div>
+</div>
+
+<div class="mt-6 bg-white rounded-3xl border p-6">
+  <h2 class="font-black text-lg mb-4">Məhsullar</h2>
+  <% if(!products.length){ %><p class="text-slate-400 text-sm">Bu satıcının hələ məhsulu yoxdur.</p><% } %>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <% products.forEach(p=>{ %><a href="/products/<%= p._id %>" class="border rounded-2xl p-3 flex gap-3 hover:border-teal-300"><% if(p.image_url){ %><img src="<%= p.image_url %>" class="h-14 w-14 rounded-xl object-cover"><% } %><div><p class="font-bold text-sm"><%= p.name %></p><p class="text-xs text-slate-500"><%= Number(p.price).toFixed(2) %> ₼ · Stok: <%= p.stock_quantity %></p></div></a><% }) %>
+  </div>
+</div>
+
+<div class="mt-6 bg-white rounded-3xl border p-6">
+  <h2 class="font-black text-lg mb-4">Son sifarişlər</h2>
+  <% if(!orders.length){ %><p class="text-slate-400 text-sm">Bu satıcının məhsuluna aid sifariş yoxdur.</p><% } %>
+  <div class="overflow-x-auto"><table class="w-full text-left min-w-[600px]"><thead class="text-slate-500 text-sm"><tr><th class="py-2">Sifariş</th><th>Tarix</th><th>Məbləğ</th><th>Status</th></tr></thead><tbody>
+  <% orders.slice(0,20).forEach(o=>{ %><tr class="border-t"><td class="py-2 font-bold">#<%= o._id.slice(0,8) %></td><td><%= new Date(o.created_at).toLocaleDateString('az-AZ') %></td><td><%= Number(o.total_amount).toFixed(2) %> ₼</td><td><span class="px-2 py-1 rounded-full bg-slate-100 text-xs font-bold"><%= o.status %></span></td></tr><% }) %>
+  </tbody></table></div>
+</div>
+
+<div class="mt-6 bg-white rounded-3xl border p-6">
+  <h2 class="font-black text-lg mb-4">Satıcıya məxsus kuponlar</h2>
+  <% if(!coupons.length){ %><p class="text-slate-400 text-sm">Bu satıcı üçün kupon yaradılmayıb. Admin → Kuponlar bölməsindən bu satıcı üçün kupon yarada bilərsiniz.</p><% } %>
+  <div class="flex flex-wrap gap-2"><% coupons.forEach(c=>{ %><span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold"><%= c.code %> — <%= c.discount_type==='percentage' ? (c.discount_value+'%') : (c.discount_value+' ₼') %></span><% }) %></div>
+</div>
+
+</main></div><%- include('../partials/footer') %></body></html>

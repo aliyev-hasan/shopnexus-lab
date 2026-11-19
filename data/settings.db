@@ -1,0 +1,5 @@
+{"_id":"33ca2839-8162-49dd-bc6d-0a6b40948ab1","key":"order_automation","value":{"enabled":true,"unit":"seconds","delay_paid_to_processing":30,"delay_processing_to_shipped":30,"delay_shipped_to_delivered":40}}
+{"_id":"setting-cashback","key":"cashback_percent","value":30}
+{"_id":"setting-commission","key":"commission_rate","value":15}
+{"_id":"setting-payment-delay","key":"payment_delay_ms","value":0}
+{"_id":"setting-payment-force","key":"payment_force_result","value":"AUTH_REQUIRED"}

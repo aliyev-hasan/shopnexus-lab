@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geri qaytarmalar | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <div class="flex">
+    <%- include('../partials/admin-sidebar', { current: 'refunds' }) %>
+    <main class="min-w-0 flex-1 p-5 md:p-8">
+      <h1 class="text-3xl font-black mb-8">Geri qaytarmalar</h1>
+      <div class="rounded-2xl border border-slate-200 bg-white overflow-x-auto">
+        <table class="w-full text-left min-w-[800px]">
+          <thead class="bg-slate-50 text-slate-500 text-sm">
+            <tr><th class="p-4">ID</th><th>Müştəri</th><th>Sifariş</th><th>Məbləğ</th><th>Səbəb</th><th>Status</th><th>Əməliyyatlar</th></tr>
+          </thead>
+          <tbody>
+            <% if (!refunds.length) { %>
+              <tr><td colspan="7" class="p-8 text-center text-slate-500 font-bold">Geri qaytarma yoxdur.</td></tr>
+            <% } %>
+            <% refunds.forEach(r => { %>
+              <tr class="border-t">
+                <td class="p-4 font-mono font-bold"><%= String(r._id).slice(0,8) %></td>
+                <td><%= r.user_name %></td>
+                <td class="font-mono"><%= String(r.order_id).slice(0,8) %></td>
+                <td><%= Number(r.amount).toFixed(2) %> ₼</td>
+                <td class="max-w-xs"><%= r.reason %></td>
+                <td><span class="px-2 py-1 rounded-full text-xs font-bold <%= r.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : r.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' %>"><%= r.status %></span></td>
+                <td>
+                  <% if (r.status === 'PENDING') { %>
+                    <div class="flex gap-2">
+                      <form action="/admin/refunds/<%= r._id %>/approve" method="POST"><button class="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-black text-white">Təsdiqlə</button></form>
+                      <form action="/admin/refunds/<%= r._id %>/reject" method="POST"><button class="rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-black text-white">Rədd et</button></form>
+                    </div>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# local config / secrets
+.env
+.env.*
+!.env.example
+.mcp.json
+
+# tooling / internal
+.commandcode/
+.pytest_cache/
+testsprite_tests/
+outputs/
+report_work/
+
+# logs
+*.log
+npm-debug.log*
+
+# NeDB backup files (the *.db files in data/ ARE tracked on purpose)
+data/*.db~
+*.db~
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini

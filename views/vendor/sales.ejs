@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Satış Tarixçəsi | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-black uppercase tracking-wider text-teal-600">Satış tarixçəsi</p>
+        <h1 class="text-3xl font-black tracking-tight sm:text-4xl">Satış Detalları</h1>
+        <p class="mt-2 text-sm text-slate-500">Hər məhsul üzrə satılan miqdar, müştəri, komissiya və tarix.</p>
+      </div>
+      <a href="/vendor/dashboard" class="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:bg-teal-600"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+    </div>
+
+    <!-- Xülasə -->
+    <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p class="text-sm font-bold text-slate-500">Satılan məhsul</p><h2 class="mt-1 text-3xl font-black"><%= totalSold %></h2></div>
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p class="text-sm font-bold text-slate-500">Xam satış</p><h2 class="mt-1 text-3xl font-black"><%= money(grossRevenue) %> ₼</h2></div>
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p class="text-sm font-bold text-slate-500">Xalis satış</p><h2 class="mt-1 text-3xl font-black"><%= money(netSales) %> ₼</h2></div>
+      <div class="rounded-3xl border border-rose-200 bg-rose-50 p-6 shadow-sm"><p class="text-sm font-bold text-rose-700">Geri qaytarmalar</p><h2 class="mt-1 text-3xl font-black text-rose-800">-<%= money(refundAmount||0) %> ₼</h2></div>
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p class="text-sm font-bold text-slate-500">Ləğv edilmiş</p><h2 class="mt-1 text-3xl font-black">-<%= money(cancellationAmount||0) %> ₼</h2></div>
+      <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm"><p class="text-sm font-bold text-amber-700">Komissiya (<%= Math.round(commissionRate * 100) %>%)</p><h2 class="mt-1 text-3xl font-black text-amber-800"><%= money(commission) %> ₼</h2></div>
+    </div>
+
+    <div class="mb-8 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm"><p class="text-sm font-bold text-emerald-700">Xalis gəlir</p><h2 class="mt-1 text-3xl font-black text-emerald-800"><%= money(netRevenue) %> ₼</h2></div>
+    </div>
+
+    <!-- Detallar cədvəli -->
+    <div class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[860px] text-left">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+              <th class="px-6 py-4">Məhsul</th>
+              <th class="px-6 py-4">Miqdar</th>
+              <th class="px-6 py-4">Qiymət</th>
+              <th class="px-6 py-4">Cəm</th>
+              <th class="px-6 py-4">Komissiya</th>
+              <th class="px-6 py-4">Müştəri</th>
+              <th class="px-6 py-4">Tarix</th>
+              <th class="px-6 py-4">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (!salesDetails || !salesDetails.length) { %>
+              <tr><td colspan="8" class="px-6 py-12 text-center text-slate-500">Hələ satış yoxdur.</td></tr>
+            <% } %>
+            <% (salesDetails || []).forEach(sd=>{ %>
+              <tr class="border-t border-slate-100 <%= sd.refunded ? 'bg-rose-50/40' : '' %>">
+                <td class="px-6 py-4 font-bold"><%= sd.product_name %></td>
+                <td class="px-6 py-4"><span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold"><%= sd.quantity %> ədəd</span></td>
+                <td class="px-6 py-4 font-bold"><%= money(sd.price) %> ₼</td>
+                <td class="px-6 py-4 font-bold"><%= money(sd.line_total) %> ₼</td>
+                <td class="px-6 py-4"><span class="text-sm font-bold text-amber-600"><%= money(sd.commission) %> ₼ (<%= Math.round(sd.commission_rate * 100) %>%)</span></td>
+                <td class="px-6 py-4"><p class="font-bold"><%= sd.customer_name %></p><p class="text-xs text-slate-500"><%= sd.customer_email %></p></td>
+                <td class="px-6 py-4 text-slate-500"><%= sd.order_date ? new Date(sd.order_date).toLocaleString('az-AZ') : '—' %></td>
+                <td class="px-6 py-4"><% if(sd.refunded){ %><span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 text-sm font-bold text-rose-700"><i class="fa-solid fa-xmark"></i> Geri qaytarıldı</span><% } else if(sd.cancelled){ %><span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700"><i class="fa-solid fa-ban"></i> Ləğv edildi</span><% } else { %><span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700"><i class="fa-solid fa-check"></i> Satıldı</span><% } %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

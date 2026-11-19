@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Təsdiqi | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <main class="flex-1 grid place-items-center px-4 py-16">
+    <div class="w-full max-w-md bg-white rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/60 p-7 sm:p-9 text-center">
+      <div class="mx-auto w-20 h-20 rounded-3xl bg-teal-100 text-teal-600 grid place-items-center text-3xl mb-6"><i class="fa-solid fa-mobile-screen-button"></i></div>
+      <h1 class="text-3xl font-black mb-3">OTP Təsdiqi</h1>
+      <p class="text-slate-500 leading-relaxed mb-2">Kartınız üçün təsdiq kodu göndərildi.</p>
+      <p class="text-sm font-bold text-teal-600 mb-7">Lütfən 4 rəqəmli OTP kodunu daxil edin</p>
+      <form id="otpForm" class="space-y-4 text-left">
+        <label class="block"><span class="block text-sm font-bold mb-2">SMS təsdiq kodu</span><input name="sms_code" required maxlength="4" placeholder="XXXX" inputmode="numeric" autocomplete="one-time-code" class="w-full rounded-2xl bg-slate-50 border border-slate-200 p-4 outline-none focus:ring-2 focus:ring-teal-500"></label>
+        <p id="otpError" class="hidden rounded-xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600"></p>
+        <button type="submit" id="otpSubmit" class="w-full rounded-2xl bg-teal-600 hover:bg-teal-700 text-white py-4 font-black transition-colors">Təsdiqlə</button>
+      </form>
+      <a href="/checkout" class="inline-block mt-6 text-sm font-bold text-slate-500 hover:text-teal-600">Ləğv et</a>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+  <script>
+    (function(){
+      var form = document.getElementById('otpForm');
+      var errorBox = document.getElementById('otpError');
+      var submitBtn = document.getElementById('otpSubmit');
+      if (!form) return;
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        var code = form.elements.sms_code.value.trim();
+        if (!/^\d{4}$/.test(code)) {
+          errorBox.textContent = 'Kod 4 rəqəmli olmalıdır.';
+          errorBox.classList.remove('hidden');
+          return;
+        }
+        errorBox.classList.add('hidden');
+        submitBtn.disabled = true;
+        fetch('/checkout/otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sms_code: code })
+        }).then(function(r){ return r.json().then(function(d){ return { ok: r.ok, data: d }; }); })
+          .then(function(res){
+            if (res.data && res.data.success && res.data.redirectUrl) {
+              window.location.href = res.data.redirectUrl;
+              return;
+            }
+            errorBox.textContent = (res.data && res.data.message) || 'Yanlış OTP kodu!';
+            errorBox.classList.remove('hidden');
+            submitBtn.disabled = false;
+          })
+          .catch(function(){ errorBox.textContent = 'Sorğu emal edilə bilmədi.'; errorBox.classList.remove('hidden'); submitBtn.disabled = false; });
+      });
+    })();
+  </script>
+</html>

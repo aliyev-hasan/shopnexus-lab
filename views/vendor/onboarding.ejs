@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Olun | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+  <%- include('../partials/navbar', { user: user || null }) %>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center mb-9">
+        <div class="mx-auto mb-5 w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 grid place-items-center">
+          <i class="fa-solid fa-store text-3xl" aria-hidden="true"></i>
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tight">Vendor Olun</h1>
+        <p class="mt-4 text-lg text-slate-500">Satıcı kimi qoşulub öz məhsullarınızı satmağa başlayın.</p>
+      </div>
+
+      <form action="/vendor/onboarding" method="POST" class="rounded-[2rem] bg-white border border-slate-200 shadow-sm p-6 sm:p-9 space-y-6">
+        <div>
+          <label for="store_name" class="block text-sm font-black text-slate-700 mb-2">Mağaza adı</label>
+          <input id="store_name" name="store_name" type="text" placeholder="Mağaza adı" required class="w-full rounded-2xl bg-slate-100 border border-transparent px-4 py-3.5 outline-none focus:bg-white focus:border-teal-300 focus:ring-2 focus:ring-teal-500/20 transition">
+        </div>
+        <div>
+          <label for="store_description" class="block text-sm font-black text-slate-700 mb-2">Mağaza təsviri <span class="font-normal text-slate-400">(istəyə bağlı)</span></label>
+          <textarea id="store_description" name="store_description" rows="5" placeholder="Mağaza təsviri" class="w-full resize-y rounded-2xl bg-slate-100 border border-transparent px-4 py-3.5 outline-none focus:bg-white focus:border-teal-300 focus:ring-2 focus:ring-teal-500/20 transition"></textarea>
+        </div>
+        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 rounded-2xl bg-slate-950 px-6 py-3.5 text-white font-black hover:bg-teal-600 transition-colors">
+          <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+          Vendor kimi qoşul
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

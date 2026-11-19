@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cüzdanım | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-10 lg:py-14">
+    <div class="max-w-3xl mb-10">
+      <p class="text-sm font-black uppercase tracking-[0.2em] text-teal-600 mb-3">Ödəniş</p>
+      <h1 class="text-4xl sm:text-5xl font-black tracking-tight">Cüzdanım</h1>
+      <p class="mt-3 text-slate-500">Balansınızı idarə edin və əməliyyat tarixçəsini izləyin.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-[360px_1fr] gap-6">
+      <section class="bg-gradient-to-br from-teal-600 to-emerald-600 text-white rounded-[2rem] p-7 shadow-xl shadow-teal-200">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-12 h-12 rounded-2xl bg-white/20 grid place-items-center text-xl"><i class="fa-solid fa-wallet"></i></span>
+          <div>
+            <p class="text-sm font-bold text-teal-100">Mövcud balans</p>
+            <p class="text-4xl font-black tabular-nums"><%= money(wallet.balance) %> ₼</p>
+          </div>
+        </div>
+
+        <% if(user && user.role==='Customer'){ %><form id="walletTopUpForm" action="/wallet/topup" method="POST" class="space-y-4">
+          <input type="hidden" name="idempotency_key" value="<%= topUpKey %>">
+          <div>
+            <label for="amount" class="mb-2 block text-sm font-black text-teal-50">Əlavə ediləcək məbləğ (₼)</label>
+            <input id="amount" name="amount" type="number" step="0.01" min="0.01" max="10000" required placeholder="Məs: 20" class="w-full rounded-2xl bg-white/95 px-4 py-3 font-bold text-slate-900 outline-none focus:ring-4 focus:ring-white/30">
+          </div>
+          <div><label for="cardSource" class="mb-2 block text-sm font-black text-teal-50">Ödəniş kartı</label><select id="cardSource" name="card_source" class="w-full rounded-2xl bg-white/95 px-4 py-3 font-bold text-slate-900"><option value="new">Yeni kart</option><% (savedCards||[]).forEach(card=>{ %><option value="<%= card._id %>"><%= card.brand||'Kart' %> •••• <%= card.last4 %></option><% }) %></select></div>
+          <div id="newCardFields" class="space-y-3">
+            <input id="walletCardNumber" name="card_number" inputmode="numeric" autocomplete="cc-number" maxlength="23" placeholder="Kart nömrəsi" class="w-full rounded-2xl bg-white/95 px-4 py-3 text-slate-900">
+            <input id="walletCardExpiry" name="card_expiry" inputmode="numeric" autocomplete="cc-exp" maxlength="5" pattern="(0[1-9]|1[0-2])/[0-9]{2}" title="MM/YY formatında gələcək tarix daxil edin" placeholder="MM/YY" class="w-full rounded-2xl bg-white/95 px-4 py-3 text-slate-900">
+            <input id="walletCardCvv" name="card_cvv" inputmode="numeric" maxlength="4" autocomplete="cc-csc" pattern="[0-9]{3,4}" title="Kartın arxa üzündəki 3-4 rəqəm" placeholder="CVV (saxlanılmır)" class="w-full rounded-2xl bg-white/95 px-4 py-3 text-slate-900">
+            <p id="walletExpiryError" class="hidden text-xs font-bold text-rose-100">Bitmə tarixini MM/YY formatında və gələcək tarix kimi daxil edin.</p>
+            <label class="flex items-center gap-2 text-sm font-bold text-teal-50"><input type="checkbox" name="save_card" class="accent-slate-950"> Kartı təhlükəsiz token kimi yadda saxla</label>
+          </div>
+          <button type="submit" class="w-full rounded-2xl bg-white text-teal-700 px-6 py-3 font-black hover:bg-teal-50 transition-colors"><i class="fa-solid fa-credit-card mr-2"></i>Kart ilə əlavə et</button>
+          <p class="text-xs text-teal-100"><i class="fa-solid fa-circle-info mr-1"></i>Maksimum bir əməliyyat 10,000 ₼. Bu simulyasiyadır, real ödəniş aparılmır.</p>
+        </form><% } %>
+        <div class="mt-6 border-t border-white/20 pt-6"><h2 class="mb-3 text-lg font-black">Gift Card</h2><form action="/wallet/redeem-giftcard" method="POST" class="flex gap-2"><input name="code" placeholder="SHOP-XXXX-XXXX" required class="min-w-0 flex-1 rounded-xl px-3 py-2 text-slate-900"><button class="rounded-xl bg-emerald-400 px-4 py-2 font-black text-slate-900">Yüklə</button></form></div>
+      </section>
+
+      <section class="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6 sm:p-8">
+        <h2 class="text-xl font-black mb-5">Əməliyyat tarixçəsi</h2>
+        <% if (!transactions.length) { %>
+          <div class="rounded-2xl bg-slate-50 border border-slate-100 p-8 text-center text-slate-500 font-bold">Hələ əməliyyat yoxdur.</div>
+        <% } else { %>
+          <div class="space-y-3">
+            <% transactions.forEach(t => { const incoming = ['TOP_UP','CASHBACK','REFUND'].includes(t.type); %>
+              <div class="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 p-4">
+                <div class="flex items-center gap-3">
+                  <span class="w-10 h-10 rounded-xl grid place-items-center <%= incoming ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600' %>"><i class="fa-solid <%= incoming ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i></span>
+                  <div>
+                    <p class="font-black"><%= t.type === 'TOP_UP' ? 'Balans artırma' : t.type === 'CASHBACK' ? 'Cashback' : t.type === 'REFUND' ? 'Geri qaytarılan mal' : t.type === 'CASHBACK_REVERSAL' ? 'Cashback geri alındı' : 'Alış-veriş' %></p>
+                    <% if(t.description){ %><p class="text-xs text-slate-500"><%= t.description %></p><% } %>
+                    <p class="text-xs text-slate-500"><%= new Date(t.created_at).toLocaleString('az-AZ') %></p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-black <%= incoming ? 'text-emerald-600' : 'text-rose-600' %>"><%= incoming ? '+' : '-' %><%= money(t.amount) %> ₼</p>
+                  <p class="text-xs text-slate-500">Balans: <%= money(t.balance_after) %> ₼</p>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </section>
+      <% if (typeof savedCards !== 'undefined' && savedCards && savedCards.length) { %><section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2"><h2 class="mb-4 text-xl font-black">Saxlanmış kartlar</h2><div class="grid gap-3 sm:grid-cols-2"><% savedCards.forEach(card => { %><div class="flex items-center justify-between rounded-2xl bg-slate-50 p-4"><span class="font-bold"><i class="fa-brands fa-cc-<%= card.brand || 'visa' %> mr-2"></i><%= card.brand ? card.brand.charAt(0).toUpperCase()+card.brand.slice(1) : 'Kart' %> •••• <%= card.last4 %></span><form action="/wallet/saved-card/<%= card._id %>/delete" method="POST"><button class="text-rose-600 font-bold">Sil</button></form></div><% }) %></div></section><% } %>
+      <% if((receipts||[]).length){ %><section class="mt-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2"><h2 class="mb-4 text-xl font-black">Qəbzlər</h2><div class="grid gap-3 sm:grid-cols-2"><% receipts.slice(0,8).forEach(receipt=>{ %><a href="/receipts/<%= receipt.public_token %>" class="rounded-2xl border p-4 hover:border-teal-400"><p class="font-black"><%= receipt.reference_number %></p><p class="mt-1 text-sm text-slate-500"><%= receipt.operation_type %> · <%= money(receipt.final_total) %> ₼</p></a><% }) %></div></section><% } %>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+  <script>
+    (function(){
+      const source=document.getElementById('cardSource'), fresh=document.getElementById('newCardFields'), form=document.getElementById('walletTopUpForm');
+      const number=document.getElementById('walletCardNumber'), expiry=document.getElementById('walletCardExpiry'), expiryError=document.getElementById('walletExpiryError'), cvv=document.getElementById('walletCardCvv');
+      if(!source||!form)return;
+      const expiryValid=()=>{
+        const match=expiry.value.match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+        if(!match)return false;
+        const month=Number(match[1]), year=2000+Number(match[2]), now=new Date();
+        return year>now.getFullYear()||(year===now.getFullYear()&&month>=now.getMonth()+1);
+      };
+      const validateExpiry=()=>{
+        const valid=source.value!=='new'||expiryValid();
+        expiry.setCustomValidity(valid?'':'Bitmə tarixini MM/YY formatında və gələcək tarix kimi daxil edin.');
+        expiryError.classList.toggle('hidden',valid||!expiry.value);
+        return valid;
+      };
+      number.addEventListener('input',()=>{const digits=number.value.replace(/\D/g,'').slice(0,19);number.value=digits.replace(/(.{4})/g,'$1 ').trim();});
+      expiry.addEventListener('input',()=>{const digits=expiry.value.replace(/\D/g,'').slice(0,4);expiry.value=digits.length>2?digits.slice(0,2)+'/'+digits.slice(2):digits;validateExpiry();});
+      const sync=()=>{const isNew=source.value==='new';fresh.classList.toggle('hidden',!isNew);number.required=isNew;expiry.required=isNew;cvv.required=isNew;validateExpiry();};
+      source.addEventListener('change',sync);
+      form.addEventListener('submit',event=>{if(!validateExpiry()){event.preventDefault();expiry.reportValidity();}});
+      sync();
+    })();
+  </script>
+</body>
+</html>

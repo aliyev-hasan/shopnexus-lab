@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sifariş uğurla alındı | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-10 lg:py-14">
+    <section class="rounded-[2rem] bg-emerald-600 text-white p-6 sm:p-8 mb-8 shadow-xl shadow-emerald-200">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-5">
+        <div class="w-16 h-16 rounded-2xl bg-white/20 grid place-items-center text-3xl"><i class="fa-solid fa-circle-check"></i></div>
+        <div><h1 class="text-3xl sm:text-4xl font-black">Sifarişiniz uğurla alındı!</h1><p class="mt-2 text-emerald-50">Sifarişiniz hazırlanır və ən qısa zamanda sizə çatdırılacaq.</p></div>
+      </div>
+    </section>
+
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm mb-6">
+      <div class="flex flex-col sm:flex-row sm:justify-between gap-4 pb-5 border-b border-slate-100">
+        <div><p class="text-sm text-slate-500">Sifariş nömrəsi</p><p class="font-black text-lg break-all"><%= order._id %></p></div>
+        <div class="sm:text-right"><p class="text-sm text-slate-500"><%= t('order.status_label') %></p><span class="inline-block mt-1 px-3 py-1 rounded-full bg-teal-100 text-teal-700 font-bold"><%= t('order.status.' + order.status) %></span></div>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-5 pt-5">
+        <div><p class="text-sm text-slate-500">Sifariş tarixi</p><p class="font-bold mt-1"><%= new Date(order.created_at).toLocaleString('az-AZ') %></p></div>
+        <div><p class="text-sm text-slate-500">Təxmini çatdırılma tarixi</p><p class="font-bold mt-1"><%= new Date(new Date(order.created_at).getTime() + 3*86400000).toLocaleDateString('az-AZ') %></p></div>
+        <div><p class="text-sm text-slate-500">Ödəniş üsulu</p><p class="font-bold mt-1"><%= order.payment_method %></p></div>
+        <div><p class="text-sm text-slate-500">Ünvan</p><p class="font-bold mt-1"><%= order.shipping_address %></p></div>
+      </div>
+      <div class="mt-6 pt-5 border-t border-slate-100 flex justify-between items-center"><span class="text-slate-500 font-bold">Ümumi məbləğ</span><span class="font-black text-3xl"><%= money(order.total_amount) %> ₼</span></div>
+      <% if (typeof paymentId !== 'undefined' && paymentId) { %><div class="mt-4 text-sm"><span class="text-slate-500">Payment ID:</span> <span class="font-mono font-bold"><%= paymentId %></span></div><% } %>
+    </div>
+    <% if (typeof paymentEvents !== 'undefined' && paymentEvents && paymentEvents.length) { %><section class="mb-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm"><h2 class="mb-5 text-xl font-black">Payment Event Timeline</h2><div class="ml-2 border-l-2 border-teal-100"><% paymentEvents.forEach((event, index) => { %><div class="relative pb-5 pl-6 last:pb-0"><span class="absolute -left-[7px] top-1 h-3 w-3 rounded-full bg-teal-600 ring-4 ring-white"></span><p class="font-black"><%= event.type %></p><p class="mt-1 text-xs text-slate-500"><%= new Date(event.created_at || event.timestamp || event.date).toLocaleString('az-AZ') %></p></div><% }) %></div></section><% } %>
+
+    <% const steps = ['PENDING_PAYMENT','PAID','PROCESSING','SHIPPED','DELIVERED']; const stepLabels = { PENDING_PAYMENT: t('order.status.PENDING_PAYMENT'), PAID: t('order.status.PAID'), PROCESSING: t('order.status.PROCESSING'), SHIPPED: t('order.status.SHIPPED'), DELIVERED: t('order.status.DELIVERED') }; const currentIdx = steps.indexOf(order.status); %>
+    <section class="mb-6 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm"><h2 class="mb-5 text-xl font-black"><%= t('order.order_status_title') %></h2><% if(order.status === 'CANCELLED' || order.status === 'REFUNDED'){ %><div class="flex items-center gap-3 rounded-2xl bg-rose-50 p-4 font-bold text-rose-700"><i class="fa-solid fa-xmark text-2xl"></i><span><%= order.status === 'CANCELLED' ? t('order.cancelled_msg') : t('order.refunded_msg') %></span></div><% } else if(order.status === 'RETURN_REQUESTED' || order.status === 'RETURNED'){ %><div class="flex items-center gap-3 rounded-2xl bg-amber-50 p-4 font-bold text-amber-700"><i class="fa-solid fa-rotate-left text-2xl"></i><span><%= order.status === 'RETURN_REQUESTED' ? t('order.return_pending_msg') : t('order.returned_msg') %></span></div><% } else { %><div class="flex items-center"><% steps.forEach((s, i)=>{ const done = i <= currentIdx; %><div class="flex flex-1 items-center last:flex-none"><div class="flex flex-col items-center"><span class="grid h-8 w-8 place-items-center rounded-full <%= done ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-400' %>"><% if(done){ %><i class="fa-solid fa-check text-xs"></i><% } else { %><i class="fa-solid fa-circle text-[6px]"></i><% } %></span><span class="mt-2 text-center text-[10px] font-bold <%= done ? 'text-emerald-700' : 'text-slate-400' %>"><%= stepLabels[s] %></span></div><% if(i < steps.length-1){ %><div class="mx-1 mb-5 h-0.5 flex-1 <%= i < currentIdx ? 'bg-emerald-600' : 'bg-slate-200' %>"></div><% } %></div><% }) %></div><% } %></section>
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+      <h2 class="text-xl font-black mb-4">Məhsullar</h2>
+      <div class="space-y-3"><% items.forEach(i=>{ %><div class="flex justify-between gap-4 border-b border-slate-100 py-3"><div><p class="font-bold"><%= i.product_name %></p><p class="text-slate-500 text-sm mt-1">Miqdar: <%= i.quantity %></p></div><span class="font-bold whitespace-nowrap"><%= i.lineTotal %> ₼</span></div><% }) %></div>
+    </div>
+    <div class="mt-8 flex flex-col sm:flex-row gap-3">
+      <a href="/orders" class="inline-flex justify-center items-center rounded-2xl bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 font-black transition-colors">Sifarişlərimə bax</a>
+      <a href="/orders/<%= order._id %>/receipt" class="inline-flex justify-center items-center rounded-2xl bg-slate-900 hover:bg-slate-700 text-white px-6 py-3 font-black"><i class="fa-solid fa-receipt mr-2"></i>Qəbzi yüklə</a>
+      <% if(['PENDING_PAYMENT','PAID','PROCESSING'].includes(order.status)){ %><form action="/orders/<%= order._id %>/cancel" method="POST"><button type="submit" class="w-full rounded-2xl bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 font-black"><%= t('order.cancel_order') %></button></form><% } %>
+    </div>
+    <% if (order.status === 'DELIVERED') { %><section class="mt-6 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm"><h2 class="text-xl font-black mb-3"><%= t('order.return_request_title') %></h2><form action="/orders/<%= order._id %>/refund" method="POST" class="flex flex-col sm:flex-row gap-3"><input name="reason" placeholder="<%= t('order.return_reason_placeholder') %>" required class="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"><button class="rounded-2xl bg-rose-600 px-5 py-3 font-black text-white hover:bg-rose-700"><%= t('order.return_request_submit') %></button></form></section><% } %>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

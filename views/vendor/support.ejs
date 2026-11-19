@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="<%= currentLang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= t('vendor_support.title') %> | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-14">
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div><p class="mb-2 text-sm font-black uppercase tracking-[.2em] text-teal-600"><%= t('vendor_support.panel_label') %></p><h1 class="text-4xl font-black tracking-tight"><%= t('vendor_support.title') %></h1><p class="mt-2 text-slate-500"><%= t('vendor_support.subtitle') %></p></div>
+      <a href="/vendor/dashboard" class="inline-flex items-center gap-2 font-black text-teal-600 hover:text-teal-800"><i class="fa-solid fa-arrow-left"></i> <%= t('vendor_support.back_to_dashboard') %></a>
+    </div>
+
+    <div class="space-y-4 mb-8">
+      <% if (!(tickets||[]).length) { %>
+        <div class="rounded-[2rem] border border-slate-200 bg-white p-8 text-center text-slate-500 font-bold"><%= t('vendor_support.empty') %></div>
+      <% } %>
+      <% (tickets||[]).forEach(t2 => { %>
+        <div class="rounded-[2rem] border border-slate-200 bg-white p-6">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="px-2 py-1 rounded-full text-xs font-bold <%= t2.status==='ANSWERED'?'bg-emerald-100 text-emerald-700':t2.status==='CLOSED'?'bg-slate-200 text-slate-600':'bg-amber-100 text-amber-700' %>"><%= t2.status==='ANSWERED'?t('admin_support.status_answered'):t2.status==='CLOSED'?t('admin_support.status_closed'):t('admin_support.status_open') %></span>
+            <span class="px-2 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700"><%= t2.category %></span>
+            <span class="text-xs text-slate-400">#<%= t2._id.slice(0,8) %></span>
+          </div>
+          <div class="space-y-2 mb-3">
+            <% (t2.messages||[]).forEach(m => { %>
+              <div class="rounded-xl p-3 <%= m.sender==='admin'?'bg-teal-50':'bg-slate-50' %>">
+                <p class="text-xs font-bold text-slate-500 mb-1"><%= m.sender==='admin'?t('vendor_support.admin_label'):t('vendor_support.you_label') %> · <%= new Date(m.created_at).toLocaleString(dateLocale) %></p>
+                <p class="text-sm text-slate-700"><%= m.text %></p>
+              </div>
+            <% }) %>
+          </div>
+          <% if (t2.status !== 'CLOSED') { %>
+            <form action="/support/<%= t2._id %>/reply" method="POST" class="flex gap-2">
+              <input name="message" required placeholder="<%= t('vendor_support.reply_placeholder') %>" class="flex-1 rounded-xl border px-3 py-2 text-sm">
+              <button class="rounded-xl bg-slate-950 text-white px-4 py-2 text-sm font-bold"><%= t('vendor_support.reply_button') %></button>
+            </form>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8">
+      <h2 class="mb-4 text-2xl font-black"><%= t('vendor_support.new_ticket_title') %></h2>
+      <form action="/support" method="POST" class="grid gap-4">
+        <select name="category" class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20">
+          <option value="ORDER"><%= t('vendor_support.category_order') %></option>
+          <option value="PAYMENT"><%= t('vendor_support.category_payment') %></option>
+          <option value="PRODUCT"><%= t('vendor_support.category_product') %></option>
+          <option value="VENDOR"><%= t('vendor_support.category_vendor') %></option>
+          <option value="OTHER"><%= t('vendor_support.category_other') %></option>
+        </select>
+        <input name="productId" placeholder="<%= t('vendor_support.product_id_placeholder') %>" class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20">
+        <input name="orderId" placeholder="<%= t('vendor_support.order_id_placeholder') %>" class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20">
+        <textarea name="message" required rows="4" placeholder="<%= t('vendor_support.message_placeholder') %>" class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20"></textarea>
+        <button class="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-7 py-3.5 font-black text-white transition hover:bg-teal-700"><i class="fa-solid fa-paper-plane"></i> <%= t('vendor_support.submit_button') %></button>
+      </form>
+    </div>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

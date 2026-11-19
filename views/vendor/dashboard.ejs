@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="<%= currentLang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Dashboard | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+
+  <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+    <!-- Store header -->
+    <section class="relative mb-8 overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-sm">
+      <% if (vendor.store_banner) { %>
+        <div class="absolute inset-0 bg-cover bg-center opacity-60" style="background-image: url('<%= vendor.store_banner %>');"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/30"></div>
+      <% } else { %>
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-950 via-teal-950 to-slate-900"></div>
+      <% } %>
+      <div class="relative flex flex-col gap-6 p-6 sm:p-9 xl:flex-row xl:items-center xl:justify-between">
+        <div class="flex items-center gap-5">
+          <% if (vendor.store_logo) { %>
+            <img src="<%= vendor.store_logo %>" alt="<%= vendor.store_name %>" class="h-20 w-20 rounded-full border-4 border-white/20 object-cover shadow-xl sm:h-24 sm:w-24">
+          <% } else { %>
+            <div class="grid h-20 w-20 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 sm:h-24 sm:w-24"><i class="fa-solid fa-store text-3xl text-teal-200"></i></div>
+          <% } %>
+          <div>
+            <p class="mb-2 text-sm font-black uppercase tracking-[.2em] text-teal-300"><%= t('vendor_dash.badge') %></p>
+            <h1 class="text-3xl font-black tracking-tight sm:text-4xl"><%= vendor.store_name %></h1>
+            <p class="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base"><%= vendor.store_description || t('vendor_dash.default_desc') %></p>
+          </div>
+        </div>
+        <div class="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap xl:w-auto xl:max-w-3xl xl:justify-end">
+          <a href="/vendor/coupons" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-white/10 border border-white/20 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"><i class="fa-solid fa-ticket"></i> <%= t('vendor_dash.coupons') %></a>
+          <a href="/vendor/questions" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-white/10 border border-white/20 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"><i class="fa-solid fa-circle-question"></i> <%= t('vendor_dash.questions') %><% if((notificationContextCounts.questions||0)>0){ %><span class="rounded-full bg-rose-600 px-2 py-0.5 text-xs"><%= notificationContextCounts.questions %></span><% } %></a>
+          <a href="/vendor/customer-support" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-white/10 border border-white/20 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"><i class="fa-solid fa-comments"></i> Müştəri mesajları<% if((notificationContextCounts.customer_support||0)>0){ %><span class="rounded-full bg-rose-600 px-2 py-0.5 text-xs"><%= notificationContextCounts.customer_support %></span><% } %></a>
+          <a href="/vendor/support" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-white/10 border border-white/20 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"><i class="fa-solid fa-life-ring"></i> <%= t('vendor_dash.support') %><% if((notificationContextCounts.support||0)>0){ %><span class="rounded-full bg-rose-600 px-2 py-0.5 text-xs"><%= notificationContextCounts.support %></span><% } %></a>
+          <% if((notificationContextCounts.returns||0)>0){ %><a href="/vendor/sales?context=returns" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-black text-white"><i class="fa-solid fa-rotate-left"></i> Geri qaytarma <span class="rounded-full bg-white px-2 py-0.5 text-xs text-rose-700"><%= notificationContextCounts.returns %></span></a><% } %>
+          <a href="/vendor/profile" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-teal-100"><i class="fa-solid fa-pen-to-square"></i> <%= t('vendor_dash.edit_store') %></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Overview stats -->
+    <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><div class="mb-4 grid h-10 w-10 place-items-center rounded-xl bg-teal-50 text-teal-600"><i class="fa-solid fa-box"></i></div><p class="text-sm font-bold text-slate-500"><%= t('vendor_dash.stat_products') %></p><h2 class="mt-1 text-3xl font-black"><%= products.length %></h2></div>
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><div class="mb-4 grid h-10 w-10 place-items-center rounded-xl bg-sky-50 text-sky-600"><i class="fa-solid fa-cubes-stacked"></i></div><p class="text-sm font-bold text-slate-500"><%= t('vendor_dash.stat_stock') %></p><h2 class="mt-1 text-3xl font-black"><%= products.reduce((s, p) => s + (Number(p.stock_quantity) || 0), 0) %></h2></div>
+      <a href="/vendor/sales" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-teal-300 hover:shadow-md"><div class="mb-4 grid h-10 w-10 place-items-center rounded-xl bg-teal-50 text-teal-600"><i class="fa-solid fa-cart-shopping"></i></div><p class="text-sm font-bold text-slate-500"><%= t('vendor_dash.stat_sold') %></p><h2 class="mt-1 text-3xl font-black"><%= totalSold %></h2><p class="mt-2 text-xs font-bold text-teal-600"><%= t('vendor_dash.sales_history') %> <i class="fa-solid fa-arrow-right ml-1"></i></p></a>
+      <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><div class="mb-4 grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-coins"></i></div><p class="text-sm font-bold text-slate-500"><%= t('vendor_dash.stat_gross') %></p><h2 class="mt-1 text-3xl font-black"><%= grossRevenue.toFixed(2) %> ₼</h2></div>
+    </div>
+
+    <!-- Analytics -->
+    <section class="mb-8">
+      <div class="mb-4"><p class="text-sm font-black uppercase tracking-wider text-teal-600"><%= t('vendor_dash.analytics_label') %></p><h2 class="text-2xl font-black"><%= t('vendor_dash.analytics_title') %></h2></div>
+      <div class="grid gap-4 md:grid-cols-3">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p class="text-sm font-bold text-slate-500"><%= t('vendor_dash.stat_gross') %></p><p class="mt-2 text-2xl font-black"><%= grossRevenue.toFixed(2) %> ₼</p></div>
+        <div class="rounded-3xl border border-rose-200 bg-rose-50 p-6 shadow-sm"><p class="text-sm font-bold text-rose-700"><%= t('vendor_dash.refunds') %></p><p class="mt-2 text-2xl font-black text-rose-800">-<%= (refundAmount||0).toFixed(2) %> ₼</p></div>
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p class="text-sm font-bold text-slate-500"><%= t('vendor_dash.cancelled') %></p><p class="mt-2 text-2xl font-black">-<%= (cancellationAmount||0).toFixed(2) %> ₼</p></div>
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><p class="text-sm font-bold text-slate-500"><%= t('vendor_dash.net_sales') %></p><p class="mt-2 text-2xl font-black"><%= netSales.toFixed(2) %> ₼</p></div>
+        <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-sm"><p class="text-sm font-bold text-amber-700"><%= t('vendor_dash.platform_commission', { pct: Math.round(commissionRate * 100) }) %></p><p class="mt-2 text-2xl font-black text-amber-800"><%= commission.toFixed(2) %> ₼</p></div>
+        <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm"><p class="text-sm font-bold text-emerald-700"><%= t('vendor_dash.net_revenue') %></p><p class="mt-2 text-2xl font-black text-emerald-800"><%= netRevenue.toFixed(2) %> ₼</p></div>
+      </div>
+    </section>
+
+    <section class="grid gap-8 lg:grid-cols-[380px_1fr]">
+      <form action="/vendor/products" method="POST" enctype="multipart/form-data" class="h-fit space-y-4 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div><h2 class="text-2xl font-black"><%= t('vendor_dash.add_product_title') %></h2><p class="mt-1 text-sm text-slate-500"><%= t('vendor_dash.add_product_subtitle') %></p></div>
+        <input name="name" required class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none transition focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20" placeholder="<%= t('vendor_dash.name_placeholder') %>">
+        <input name="price" required type="number" min="0" step="0.01" class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none transition focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20" placeholder="<%= t('vendor_dash.price_placeholder') %>">
+        <input name="stock_quantity" type="number" min="0" value="0" class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none transition focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-500/20" placeholder="<%= t('vendor_dash.stock_placeholder') %>">
+        <select name="category" class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none focus:border-teal-300 focus:bg-white"><option value=""><%= t('vendor_dash.select_category') %></option><% ['Elektronika','Geyim','Aksessuar','Ev əşyaları'].forEach(c=>{ %><option value="<%= c %>"><%= c %></option><% }) %></select>
+        <textarea name="description" rows="4" class="w-full rounded-2xl border border-transparent bg-slate-100 px-4 py-3 outline-none focus:border-teal-300 focus:bg-white" placeholder="<%= t('vendor_dash.description_placeholder') %>"></textarea>
+        <input name="image" type="file" accept="image/*" class="w-full rounded-2xl bg-slate-100 px-4 py-3 text-sm">
+        <button class="w-full rounded-2xl bg-slate-950 px-5 py-3.5 font-black text-white transition hover:bg-teal-600"><i class="fa-solid fa-plus mr-2"></i><%= t('vendor_dash.add_product_title') %></button>
+      </form>
+
+      <div class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+        <div class="flex items-center justify-between p-6"><div><h2 class="text-2xl font-black"><%= t('vendor_dash.my_products') %></h2><p class="mt-1 text-sm text-slate-500"><%= t('vendor_dash.my_products_subtitle') %></p></div><a href="/vendor/products" class="text-sm font-black text-teal-600 hover:text-teal-800"><%= t('vendor_dash.view_all') %> <i class="fa-solid fa-arrow-right ml-1"></i></a></div>
+        <div class="overflow-x-auto"><table class="w-full min-w-[620px] text-left"><thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th class="px-6 py-4"><%= t('vendor_dash.col_product') %></th><th class="px-6 py-4"><%= t('vendor_dash.col_category') %></th><th class="px-6 py-4"><%= t('vendor_dash.col_price') %></th><th class="px-6 py-4"><%= t('vendor_dash.col_stock') %></th><th class="px-6 py-4"><%= t('vendor_dash.col_action') %></th></tr></thead><tbody><% if (!products.length) { %><tr><td colspan="5" class="px-6 py-12 text-center text-slate-500"><%= t('vendor_dash.no_products') %></td></tr><% } %><% products.forEach(p=>{ %><tr class="border-t border-slate-100"><td class="px-6 py-4 font-bold"><%= p.name %></td><td class="px-6 py-4 text-slate-500"><%= p.category || '—' %></td><td class="px-6 py-4 font-bold"><%= Number(p.price).toFixed(2) %> ₼</td><td class="px-6 py-4"><span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold"><%= p.stock_quantity || 0 %></span></td><td class="px-6 py-4"><div class="flex items-center gap-3"><a href="/vendor/products/<%= p._id %>/edit" class="font-bold text-teal-600 hover:text-teal-800"><%= t('vendor_dash.edit') %></a><form action="/vendor/products/<%= p._id %>/delete" method="POST" onsubmit="return confirm('<%= t('vendor_dash.confirm_delete') %>')"><button class="font-bold text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash mr-1"></i><%= t('vendor_dash.delete') %></button></form></div></td></tr><% }) %></tbody></table></div>
+      </div>
+    </section>
+  </main>
+  <%- include('../partials/footer') %>
+</body>
+</html>

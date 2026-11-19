@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= t('checkout.title') %> | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:py-14">
+    <div class="mb-8"><p class="text-sm font-black uppercase tracking-[.2em] text-teal-600"><%= t('checkout.step_label') %></p><h1 class="mt-2 text-4xl font-black tracking-tight"><%= t('checkout.title') %></h1><p class="mt-3 text-slate-500"><%= t('checkout.subtitle') %></p></div>
+    <form id="checkoutForm" action="/checkout" method="POST" class="space-y-7 rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+      <section><h2 class="mb-5 flex items-center gap-3 text-xl font-black"><span class="grid h-10 w-10 place-items-center rounded-xl bg-teal-100 text-teal-600"><i class="fa-solid fa-location-dot"></i></span><%= t('checkout.customer_info') %></h2>
+        <% if ((addresses||[]).length) { %>
+        <label class="block"><span class="mb-2 block text-sm font-bold"><%= t('checkout.shipping_address') %> <b class="text-rose-500">*</b></span>
+          <select id="savedAddress" name="saved_address_id" class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" onchange="document.getElementById('shipping_address').value = this.value; document.getElementById('shipping_address').dispatchEvent(new Event('input'))">
+            <option value=""><%= t('checkout.select_address') %></option>
+            <% (addresses||[]).forEach(a=>{ %><option value="<%= a.label || 'Ünvan' %> · <%= a.address_line %>, <%= a.city %><%= a.full_name ? ' · ' + a.full_name : '' %><%= a.phone ? ' · ' + a.phone : '' %>"><%= a.label || 'Ünvan' %> — <%= a.address_line %>, <%= a.city %></option><% }) %>
+          </select>
+        </label>
+        <% } %>
+        <label class="block <%= (addresses||[]).length ? 'mt-5' : '' %>"><span class="mb-2 block text-sm font-bold"><%= t('checkout.shipping_address') %> <b class="text-rose-500">*</b></span><textarea id="shipping_address" name="shipping_address" required rows="3" class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" placeholder="<%= t('checkout.shipping_address') %>"></textarea></label>
+        <label class="mt-5 block max-w-sm"><span class="mb-2 block text-sm font-bold"><%= t('checkout.phone') %></span><input name="customer_phone" type="tel" class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" placeholder="+994 50 000 00 00"></label>
+      </section>
+      <section class="border-t border-slate-100 pt-7"><h2 class="mb-5 flex items-center gap-3 text-xl font-black"><span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-100 text-emerald-600"><i class="fa-solid fa-credit-card"></i></span><%= t('checkout.payment_method') %></h2>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="cursor-pointer"><input type="radio" name="payment_method" value="CARD_SIMULATOR" checked class="peer sr-only"><span class="block rounded-2xl border border-slate-200 p-4 font-bold peer-checked:border-teal-600 peer-checked:bg-teal-50 peer-checked:text-teal-700"><i class="fa-regular fa-credit-card mr-2"></i><%= t('checkout.pay_card') %></span></label>
+          <label class="cursor-pointer"><input type="radio" name="payment_method" value="WALLET" class="peer sr-only"><span class="block rounded-2xl border border-slate-200 p-4 font-bold peer-checked:border-teal-600 peer-checked:bg-teal-50 peer-checked:text-teal-700"><i class="fa-solid fa-wallet mr-2"></i><%= t('checkout.pay_wallet') %></span></label>
+          <label class="cursor-pointer"><input type="radio" name="payment_method" value="CASH_ON_DELIVERY" class="peer sr-only"><span class="block rounded-2xl border border-slate-200 p-4 font-bold peer-checked:border-teal-600 peer-checked:bg-teal-50 peer-checked:text-teal-700"><i class="fa-solid fa-money-bill-wave mr-2"></i><%= t('checkout.pay_cod') %></span></label>
+          <label class="cursor-pointer"><input type="radio" name="payment_method" value="SPLIT_PAYMENT" class="peer sr-only"><span class="block rounded-2xl border border-slate-200 p-4 font-bold peer-checked:border-teal-600 peer-checked:bg-teal-50 peer-checked:text-teal-700"><i class="fa-solid fa-code-compare mr-2"></i><%= t('checkout.pay_split') %></span></label>
+          <label class="cursor-pointer"><input type="radio" name="payment_method" value="GOOGLE_PAY" class="peer sr-only"><span class="block rounded-2xl border border-slate-200 p-4 font-bold peer-checked:border-teal-600 peer-checked:bg-teal-50 peer-checked:text-teal-700"><i class="fa-brands fa-google-pay mr-2"></i><%= t('checkout.pay_google') %></span></label>
+          <label class="cursor-pointer"><input type="radio" name="payment_method" value="APPLE_PAY" class="peer sr-only"><span class="block rounded-2xl border border-slate-200 p-4 font-bold peer-checked:border-teal-600 peer-checked:bg-teal-50 peer-checked:text-teal-700"><i class="fa-brands fa-apple-pay mr-2"></i><%= t('checkout.pay_apple') %></span></label>
+        </div>
+        <% if ((savedCards||[]).length) { %>
+        <div id="savedCardsBlock" class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p class="text-sm font-black text-amber-700 mb-2"><i class="fa-solid fa-credit-card mr-1"></i><%= t('checkout.saved_cards_title') %></p>
+          <div class="space-y-2"><label class="flex items-center gap-2 text-sm font-bold"><input type="radio" name="saved_card_id" value="" checked class="saved-card-radio">Yeni kart istifadə et</label><% (savedCards||[]).forEach(c=>{ %><label class="flex items-center gap-2 text-sm font-bold"><input type="radio" name="saved_card_id" value="<%= c._id %>" data-last4="<%= c.last4 %>" class="saved-card-radio"><i class="fa-brands fa-cc-<%= c.brand||'visa' %> text-lg"></i><%= (c.brand||'Kart').toUpperCase() %> •••• <%= c.last4 %></label><% }) %></div>
+          <p class="text-xs text-slate-500 mt-2"><%= t('checkout.saved_card_note') %></p>
+        </div>
+        <% } %>
+        <div id="splitInfo" class="mt-4 hidden rounded-2xl border border-teal-200 bg-teal-50 p-4">
+          <p class="text-sm font-black text-teal-700 mb-1"><%= t('checkout.split_title') %></p>
+          <p class="text-sm text-slate-700"><%= t('checkout.split_wallet_balance') %> <b><%= walletBalance || 0 %> ₼</b></p>
+          <p class="text-sm text-slate-700"><%= t('checkout.split_wallet_used') %> <b id="splitWalletPart">0 ₼</b></p>
+          <p class="text-sm text-slate-700"><%= t('checkout.split_card_remaining') %> <b id="splitCardPart">0 ₼</b></p>
+        </div>
+        <% if (discount && discount > 0) { %>
+        <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <p class="text-sm font-black text-emerald-700 mb-1"><%= t('checkout.coupon_applied') %></p>
+          <p class="text-sm text-slate-700"><%= t('checkout.subtotal') %> <b><%= money(subtotal) %> ₼</b></p>
+          <p class="text-sm text-slate-700"><%= t('checkout.discount') %> <b>-<%= money(discount) %> ₼</b></p>
+          <p class="text-sm font-bold text-slate-900"><%= t('checkout.total_due') %> <b><%= money(cartTotal) %> ₼</b></p>
+        </div>
+        <% } %>
+        <div id="cardFields" class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5 sm:p-6"><div class="flex justify-end"><span id="cardBrandIcon" class="text-2xl"></span></div>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2"><label for="card_number" class="mb-2 block text-sm font-bold"><%= t('checkout.card_number') %></label><input id="card_number" name="card_number" inputmode="numeric" maxlength="23" autocomplete="cc-number" class="field w-full rounded-2xl border border-slate-200 bg-white p-4 outline-none focus:ring-4 focus:ring-teal-500/10" placeholder="0000 0000 0000 0000"><p class="error mt-1 hidden text-sm font-bold text-rose-600"></p></div>
+            <div class="sm:col-span-2 sm:max-w-xs"><label for="card_expiry" class="mb-2 block text-sm font-bold"><%= t('checkout.card_expiry') %></label><input id="card_expiry" name="card_expiry" inputmode="numeric" maxlength="5" autocomplete="cc-exp" pattern="(0[1-9]|1[0-2])/[0-9]{2}" class="field w-full rounded-2xl border border-slate-200 bg-white p-4 outline-none focus:ring-4 focus:ring-teal-500/10" placeholder="MM/YY"><p class="error mt-1 hidden text-sm font-bold text-rose-600"></p></div>
+            <div class="sm:max-w-[8rem]"><label for="card_cvv" class="mb-2 block text-sm font-bold">CVV <b class="text-rose-500">*</b></label><input id="card_cvv" name="card_cvv" inputmode="numeric" maxlength="4" autocomplete="cc-csc" pattern="[0-9]{3,4}" class="field w-full rounded-2xl border border-slate-200 bg-white p-4 outline-none focus:ring-4 focus:ring-teal-500/10" placeholder="CVV"><p class="error mt-1 hidden text-sm font-bold text-rose-600"></p><p class="mt-1 text-[10px] font-bold text-slate-400">CVV heç bir yerdə saxlanılmır.</p></div>
+            <div class="sm:col-span-2"><label for="card_holder" class="mb-2 block text-sm font-bold"><%= t('checkout.card_holder') %></label><input id="card_holder" autocomplete="cc-name" class="field w-full rounded-2xl border border-slate-200 bg-white p-4 uppercase outline-none focus:ring-4 focus:ring-teal-500/10" placeholder="AD SOYAD"><p class="error mt-1 hidden text-sm font-bold text-rose-600"></p></div>
+          </div>
+          <input type="hidden" name="last4" id="last4"><input type="hidden" name="brand" id="brand"><label class="mt-4 flex items-center gap-2 text-sm font-bold"><input type="checkbox" name="save_card" value="true" class="h-4 w-4 rounded text-teal-600"><%= t('checkout.save_card') %></label>
+          <div id="preview" class="mt-6 max-w-sm rounded-2xl bg-gradient-to-br from-slate-900 to-teal-700 p-5 text-white shadow-lg"><div class="flex justify-between text-xs font-bold"><span id="cardType">BANK CARD</span><i id="cardIcon" class="fa-brands fa-cc-visa text-2xl"></i></div><p id="previewNumber" class="mt-8 font-mono text-lg tracking-widest">•••• •••• •••• ••••</p><div class="mt-5 flex justify-between text-xs"><span id="previewHolder">CARD HOLDER</span><span id="previewLast4">••••</span></div></div>
+        </div>
+      </section>
+      <button id="submitBtn" disabled type="submit" data-wait-text="<%= t('checkout.please_wait') %>" class="w-full rounded-2xl bg-slate-300 px-8 py-4 font-black text-white transition enabled:bg-slate-950 enabled:hover:bg-teal-600"><i class="fa-solid fa-lock mr-2"></i><span><%= t('checkout.complete_order') %></span></button>
+    </form>
+  </main>
+  <%- include('../partials/footer') %>
+<script>
+(function(){const form=document.getElementById('checkoutForm'), fields=document.getElementById('cardFields'), btn=document.getElementById('submitBtn'), num=document.getElementById('card_number'), exp=document.getElementById('card_expiry'), holder=document.getElementById('card_holder'), cvv=document.getElementById('card_cvv'), last4=document.getElementById('last4'), savedCardsBlock=document.getElementById('savedCardsBlock');
+function luhn(s){let sum=0,dbl=false;for(let i=s.length-1;i>=0;i--){let n=+s[i];if(dbl&&(n*=2)>9)n-=9;sum+=n;dbl=!dbl}return s.length>=12&&sum%10===0}
+function err(el,msg){let p=el.parentElement.querySelector('.error');el.classList.toggle('border-rose-500',!!msg);p.textContent=msg||'';p.classList.toggle('hidden',!msg);return !msg}
+function validate(){let active=document.querySelector('[name=payment_method]:checked').value, cardRelevant=(active==='CARD_SIMULATOR'||active==='SPLIT_PAYMENT');if(savedCardsBlock){savedCardsBlock.classList.toggle('hidden',!cardRelevant)}let selectedSaved=form.querySelector('input[name="saved_card_id"]:checked'), savedCard=selectedSaved&&selectedSaved.value?selectedSaved:null;if(!cardRelevant){fields.classList.add('hidden');document.getElementById('splitInfo').classList.add('hidden');btn.disabled=!form.shipping_address.value.trim();return}fields.classList.remove('hidden');if(active==='SPLIT_PAYMENT'){let total=Number('<%= cartTotal || 0 %>'), wb=Number('<%= walletBalance || 0 %>'), wp=Math.min(wb,total), cp=total-wp;document.getElementById('splitInfo').classList.remove('hidden');document.getElementById('splitWalletPart').textContent=wp.toFixed(2)+' ₼';document.getElementById('splitCardPart').textContent=cp.toFixed(2)+' ₼'}else{document.getElementById('splitInfo').classList.add('hidden')}let n=num.value.replace(/\D/g,''), e=exp.value, month=+e.slice(0,2), year=+e.slice(3), now=new Date(), ok=true, needCard=!savedCard;var I18N=window.I18N||{};if(needCard){ok=err(num,n.length>=13&&n.length<=19&&!/^0+$/.test(n)&&luhn(n)?'':(I18N.checkout_card_invalid||'Kart nömrəsi düzgün deyil'))&&ok;let dateOk=/^\d{2}\/\d{2}$/.test(e)&&month>=1&&month<=12;let expired=dateOk&&(2000+year<now.getFullYear()||(2000+year===now.getFullYear()&&month<now.getMonth()+1));ok=err(exp,!dateOk?(I18N.checkout_invalid_month||'MM/YY formatında düzgün ay daxil edin'):expired?(I18N.checkout_card_expired||'Kartın müddəti bitib'):'')&&ok;ok=err(holder,/^[A-Za-zƏəĞğÇçŞşİıÖöÜü\s]+$/.test(holder.value.trim())&&holder.value.trim()?'':(I18N.checkout_holder_invalid||'Kart sahibi yalnız hərf və boşluq ola bilər'))&&ok;ok=err(cvv,/^\d{3,4}$/.test(cvv.value.trim())?'':(I18N.checkout_cvv_invalid||'CVV 3-4 rəqəm olmalıdır'))&&ok}else{err(num,'');err(exp,'');err(holder,'');err(cvv,'')}btn.disabled=!(ok&&form.shipping_address.value.trim());if(needCard){last4.value=n.slice(-4)}else{last4.value=savedCard.dataset.last4||''}}
+num.oninput=()=>{let v=num.value.replace(/\D/g,'').slice(0,19);num.value=v.replace(/(.{4})/g,'$1 ').trim();document.getElementById('previewNumber').textContent=num.value||'•••• •••• •••• ••••';document.getElementById('previewLast4').textContent=v.slice(-4)||'••••';document.getElementById('cardType').textContent=/^4/.test(v)?'VISA':/^(5[1-5]|2[2-7])/.test(v)?'MASTERCARD':/^3[47]/.test(v)?'AMEX':'BANK CARD';let brand=/^4/.test(v)?'visa':/^(5[1-5]|2[2-7])/.test(v)?'mastercard':/^3[47]/.test(v)?'amex':'';document.getElementById('brand').value=brand;let icon=document.getElementById('cardBrandIcon');icon.className=brand?'fa-brands fa-cc-'+brand+' '+(brand==='visa'?'text-blue-600':brand==='mastercard'?'text-orange-600':'text-sky-600'):'';document.getElementById('cardIcon').className='fa-brands '+(brand?'fa-cc-'+brand:'');validate()};exp.oninput=()=>{let v=exp.value.replace(/\D/g,'').slice(0,4);exp.value=v.length>2?v.slice(0,2)+'/'+v.slice(2):v;validate()};holder.oninput=()=>{holder.value=holder.value.replace(/[^A-Za-zƏəĞğÇçŞşİıÖöÜü\s]/g,'');document.getElementById('previewHolder').textContent=holder.value.toUpperCase()||'CARD HOLDER';validate()};form.shipping_address.oninput=validate;document.querySelectorAll('[name=payment_method]').forEach(r=>r.onchange=validate);document.querySelectorAll('input[name="saved_card_id"]').forEach(r=>r.onchange=validate);form.onsubmit=()=>{btn.disabled=true;btn.querySelector('span').textContent=btn.dataset.waitText||'...'};validate()})();
+</script></body></html>

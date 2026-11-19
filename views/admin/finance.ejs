@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maliyyə Mərkəzi | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <div class="flex">
+    <%- include('../partials/admin-sidebar', { current: 'finance' }) %>
+    <main class="min-w-0 flex-1 p-5 md:p-8">
+      <h1 class="text-3xl font-black mb-8">Maliyyə Mərkəzi</h1>
+
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <% [
+          ['Ümumi gəlir', Number(totalRevenue || 0).toFixed(2) + ' ₼', 'sack-dollar', 'emerald'],
+          ['Xalis satış', Number(netSales || 0).toFixed(2) + ' ₼', 'chart-line', 'teal'],
+          ['Gözləyən ödənişlər', (pendingPayments ? pendingPayments.length : 0), 'clock', 'amber'],
+          ['Uğurlu ödənişlər', successfulPayments, 'circle-check', 'teal'],
+          ['Uğursuz ödənişlər', failedPayments, 'circle-xmark', 'rose'],
+          ['Təsdiqlənmiş geri qaytarma', Number(totalRefunds || 0).toFixed(2) + ' ₼', 'rotate-left', 'orange'],
+          ['Cüzdan öhdəliyi', Number(walletLiability || 0).toFixed(2) + ' ₼', 'wallet', 'teal'],
+          ['Qapıda ödəniş', Number(cashOnDelivery || 0).toFixed(2) + ' ₼', 'money-bill-wave', 'sky'],
+          ['Cashback öhdəliyi', Number(cashbackLiability || 0).toFixed(2) + ' ₼', 'gift', 'rose']
+        ].forEach(s => { %>
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <p class="font-bold text-slate-500"><%= s[0] %></p>
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-<%= s[3] %>-100 text-<%= s[3] %>-600"><i class="fa-solid fa-<%= s[2] %>"></i></span>
+            </div>
+            <p class="mt-3 text-2xl font-black"><%= s[1] %></p>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="mt-8 grid gap-6 lg:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-black">Son 7 gün gəlir</h2>
+          <canvas id="revenueChart"></canvas>
+        </div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-black">Ödəniş üsulu bölgüsü</h2>
+          <canvas id="methodChart"></canvas>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-6 lg:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-4 text-lg font-black">Uğurlu vs uğursuz ödənişlər</h2>
+          <canvas id="successFailedChart"></canvas>
+        </div>
+      </div>
+    </main>
+  </div>
+  <%- include('../partials/footer') %>
+  <script>
+    (function() {
+      const revenueCtx = document.getElementById('revenueChart');
+      if (revenueCtx) {
+        new Chart(revenueCtx, {
+          type: 'line',
+          data: {
+            labels: <%- JSON.stringify(revenueLabels || []) %>,
+            datasets: [{
+              label: 'Gəlir (₼)',
+              data: <%- JSON.stringify(revenueData || []) %>,
+              borderColor: '#0d9488',
+              backgroundColor: 'rgba(13,148,136,0.1)',
+              tension: 0.3,
+              fill: true
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+      }
+      const methodCtx = document.getElementById('methodChart');
+      if (methodCtx) {
+        new Chart(methodCtx, {
+          type: 'doughnut',
+          data: {
+            labels: <%- JSON.stringify(methodLabels || []) %>,
+            datasets: [{
+              data: <%- JSON.stringify(methodData || []) %>,
+              backgroundColor: ['#0d9488','#0ea5e9','#10b981','#f59e0b','#ef4444','#059669','#fb7185']
+            }]
+          },
+          options: { responsive: true }
+        });
+      }
+      const successFailedCtx = document.getElementById('successFailedChart');
+      if (successFailedCtx) {
+        new Chart(successFailedCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Uğurlu', 'Uğursuz'],
+            datasets: [{
+              label: 'Ödənişlər',
+              data: [<%= successfulPayments %>, <%= failedPayments %>],
+              backgroundColor: ['#10b981', '#ef4444']
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

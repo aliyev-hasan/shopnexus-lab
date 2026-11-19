@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="<%= currentLang %>">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= vendor.store_name %> ilə əlaqə | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar',{user:user||null}) %>
+  <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+    <a href="/vendors/<%= vendor.slug || vendor._id %>" class="mb-6 inline-flex items-center gap-2 text-sm font-black text-teal-700 hover:text-teal-900"><i class="fa-solid fa-arrow-left"></i> Mağazaya qayıt</a>
+    <section class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+      <header class="flex items-center gap-4 border-b bg-slate-950 p-6 text-white sm:p-8">
+        <% if(vendor.store_logo){ %><img src="<%= vendor.store_logo %>" alt="<%= vendor.store_name %>" class="h-16 w-16 rounded-2xl bg-white object-cover"><% } else { %><span class="grid h-16 w-16 place-items-center rounded-2xl bg-teal-600 text-2xl"><i class="fa-solid fa-store"></i></span><% } %>
+        <div><p class="text-xs font-black uppercase tracking-widest text-teal-300">Birbaşa satıcı dəstəyi</p><h1 class="mt-1 text-2xl font-black sm:text-3xl"><%= vendor.store_name %></h1><p class="mt-1 text-sm text-slate-300">Mesajlar yalnız sizinlə bu mağaza arasında görünür; admin dəstəyinə göndərilmir.</p></div>
+      </header>
+      <div class="p-5 sm:p-8">
+        <% if(conversation && (conversation.messages||[]).length){ %>
+          <div class="mb-7 space-y-3" id="conversation-<%= conversation._id %>">
+            <% conversation.messages.forEach(message=>{ const mine=message.sender==='customer'; %>
+              <div class="flex <%= mine?'justify-end':'justify-start' %>"><div class="max-w-[85%] rounded-2xl px-4 py-3 <%= mine?'bg-teal-600 text-white':'bg-slate-100 text-slate-800' %>"><p class="text-xs font-black <%= mine?'text-teal-100':'text-slate-500' %>"><%= mine?'Siz':vendor.store_name %> · <%= new Date(message.created_at).toLocaleString(currentLang) %></p><p class="mt-1 whitespace-pre-wrap"><%= message.text %></p></div></div>
+            <% }) %>
+          </div>
+          <form action="/support/vendor-conversations/<%= conversation._id %>/reply" method="POST" class="flex flex-col gap-3 border-t pt-6 sm:flex-row"><textarea name="message" required maxlength="2000" rows="3" placeholder="Satıcıya mesajınızı yazın..." class="min-w-0 flex-1 rounded-2xl border border-slate-300 p-4 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"></textarea><button class="self-stretch rounded-2xl bg-teal-600 px-6 py-3 font-black text-white hover:bg-teal-700"><i class="fa-solid fa-paper-plane mr-2"></i>Göndər</button></form>
+        <% } else { %>
+          <div class="mb-6 rounded-2xl bg-teal-50 p-5 text-sm text-teal-900"><i class="fa-solid fa-shield-halved mr-2"></i>Sifariş, məhsul və ya mağaza ilə bağlı sualınızı birbaşa satıcı komandasına göndərin.</div>
+          <form action="/support/vendor/<%= vendor.slug || vendor._id %>" method="POST" class="space-y-3"><textarea name="message" required maxlength="2000" rows="5" placeholder="Satıcıya mesajınızı yazın..." class="w-full rounded-2xl border border-slate-300 p-4 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"></textarea><button class="w-full rounded-2xl bg-teal-600 px-6 py-3.5 font-black text-white hover:bg-teal-700"><i class="fa-solid fa-paper-plane mr-2"></i>Satıcıya göndər</button></form>
+        <% } %>
+      </div>
+    </section>
+  </main>
+  <%- include('../partials/footer') %>
+</body></html>

@@ -1,0 +1,98 @@
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-200 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center gap-4 sm:gap-6">
+    <a href="/" class="flex items-center gap-3 font-black text-2xl text-slate-950">
+      <span class="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-600 to-emerald-600 text-white grid place-items-center"><i class="fa-solid fa-bag-shopping"></i></span>
+      <span class="hidden sm:inline">ShopNexus</span>
+    </a>
+    <form action="/products" class="hidden lg:flex flex-1 max-w-2xl relative">
+      <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+      <input name="search" autocomplete="off" placeholder="<%= t('nav.search_placeholder') %>" class="w-full rounded-2xl bg-slate-100 text-slate-950 placeholder:text-slate-500 border border-slate-300 pl-12 pr-4 py-3 focus:bg-white focus:ring-2 focus:ring-teal-500 outline-none">
+    </form>
+    <div class="ml-auto flex items-center gap-2 sm:gap-4">
+      <a href="/products" class="hidden lg:inline-flex font-semibold text-slate-700 hover:text-teal-600"><%= t('nav.products') %></a>
+      <% if(!user || user.role==='Customer'){ %><a href="/wishlist" aria-label="<%= t('nav.wishlist') %>" class="relative hidden sm:grid w-11 h-11 rounded-2xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 place-items-center"><i class="fa-solid fa-heart" aria-hidden="true"></i><span id="wishlistCountBadge" class="absolute -right-1 -top-1 bg-rose-600 text-white text-xs rounded-full w-5 h-5 grid place-items-center <%= wishlistCount > 0 ? '' : 'hidden' %>"><%= wishlistCount %></span></a><a href="/cart" aria-label="<%= t('nav.cart') %>" class="relative w-11 h-11 rounded-2xl bg-slate-100 hover:bg-teal-50 hover:text-teal-600 grid place-items-center"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><span id="cartCountBadge" class="absolute -right-1 -top-1 bg-rose-600 text-white text-xs rounded-full w-5 h-5 grid place-items-center <%= cartCount > 0 ? '' : 'hidden' %>"><%= cartCount %></span></a><% } %>
+      <% if (user) { %>
+        <% if(user.role==='Customer'){ %><a href="/orders" class="hidden md:inline-flex font-semibold text-slate-700 hover:text-teal-600"><%= t('nav.my_orders') %></a><% } %>
+        <% if (user.role === 'Vendor') { %><a href="/vendor/dashboard" class="hidden md:inline-flex px-4 py-2 rounded-xl bg-amber-100 text-amber-700 font-bold"><%= t('nav.vendor_panel') %></a><% } %>
+        <% if (user.role === 'Admin') { %><a href="/admin" class="hidden md:inline-flex px-4 py-2 rounded-xl bg-slate-900 text-white font-bold"><%= t('nav.admin_panel') %></a><% } %>
+        <% if(user.role==='Customer'){ %><a href="/wallet" aria-label="<%= t('nav.wallet') %>" class="hidden sm:flex items-center gap-1.5 rounded-2xl bg-emerald-50 text-emerald-700 px-3 py-2 font-bold hover:bg-emerald-100"><i class="fa-solid fa-wallet" aria-hidden="true"></i><span class="hidden xl:inline text-sm"><%= money(typeof walletBalance !== 'undefined' ? walletBalance : 0) %> ₼</span></a><% } %>
+        <a href="/notifications" aria-label="Bildirişlər" class="relative grid h-11 w-11 place-items-center rounded-2xl bg-slate-100 text-slate-700 hover:bg-teal-50 hover:text-teal-700" title="Bildirişlər"><i class="fa-regular fa-bell"></i><% if((notificationUnreadCount||0)>0){ %><span class="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-600 px-1 text-xs font-black text-white"><%= notificationUnreadCount>99?'99+':notificationUnreadCount %></span><% } %></a>
+        <a href="/user/profile" aria-label="<%= t('nav.profile') %>" class="w-11 h-11 overflow-hidden rounded-2xl bg-teal-600 text-white grid place-items-center" title="<%= t('nav.profile') %>"><% if(user.profile_picture){ %><img src="<%= user.profile_picture %>" alt="" class="h-full w-full object-cover"><% } else { %><i class="fa-regular fa-user" aria-hidden="true"></i><% } %></a>
+        <form action="/auth/logout" method="POST" class="m-0">
+          <button type="submit" aria-label="<%= t('nav.logout') %>" class="w-11 h-11 rounded-2xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 grid place-items-center" title="<%= t('nav.logout') %>"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i></button>
+        </form>
+      <% } else { %>
+        <a href="<%= authPaths.login %>" class="hidden sm:inline font-bold text-slate-700 hover:text-teal-600"><%= t('nav.login') %></a><% if(authPaths.register){ %><a href="<%= authPaths.register %>" class="px-3 py-2 sm:px-5 sm:py-3 text-sm sm:text-base rounded-2xl bg-slate-950 text-white font-bold hover:bg-teal-600"><%= t('nav.register') %></a><% } %>
+      <% } %>
+      <div class="relative hidden sm:block">
+        <button type="button" id="langMenuBtn" aria-haspopup="true" aria-expanded="false" title="<%= t('common.select_language') %>" class="w-11 h-11 rounded-2xl bg-slate-100 hover:bg-slate-200 grid place-items-center font-bold text-sm uppercase"><%= currentLang %></button>
+        <div id="langMenuDropdown" class="hidden absolute right-0 mt-2 w-52 rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden z-50">
+          <% (supportedLanguages || []).forEach(l => { %>
+            <form action="/lang/<%= l.code %>" method="POST" class="m-0">
+              <input type="hidden" name="redirect" value="<%= (typeof currentUrl !== 'undefined' ? currentUrl : '/') %>">
+              <button type="submit" class="w-full flex items-center gap-2 px-4 py-3 text-left font-semibold hover:bg-slate-50 <%= currentLang === l.code ? 'bg-teal-50 text-teal-700' : 'text-slate-700' %>"><span><%= l.flag %></span><span><%= l.name %></span></button>
+            </form>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <form action="/products" class="relative mx-4 mb-3 lg:hidden sm:mx-6">
+    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+    <input name="search" autocomplete="off" placeholder="<%= t('nav.search_placeholder') %>" class="w-full rounded-2xl border border-slate-300 bg-slate-100 py-2.5 pl-11 pr-4 text-slate-950 placeholder:text-slate-500 outline-none focus:bg-white focus:ring-2 focus:ring-teal-500">
+  </form>
+</nav>
+<script>
+  window.I18N = {
+    generic_error: <%- JSON.stringify(t('js.generic_error')) %>,
+    wishlist_added: <%- JSON.stringify(t('js.wishlist_added')) %>,
+    wishlist_removed: <%- JSON.stringify(t('js.wishlist_removed')) %>,
+    checkout_card_invalid: <%- JSON.stringify(t('js.checkout_card_invalid')) %>,
+    checkout_invalid_month: <%- JSON.stringify(t('js.checkout_invalid_month')) %>,
+    checkout_card_expired: <%- JSON.stringify(t('js.checkout_card_expired')) %>,
+    checkout_holder_invalid: <%- JSON.stringify(t('js.checkout_holder_invalid')) %>
+  };
+</script>
+<script>
+(function(){
+  var btn = document.getElementById('langMenuBtn'), menu = document.getElementById('langMenuDropdown');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function(e){ e.stopPropagation(); var open = !menu.classList.contains('hidden'); menu.classList.toggle('hidden'); btn.setAttribute('aria-expanded', String(!open)); });
+  document.addEventListener('click', function(){ menu.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+<% if (messages && messages.error && messages.error.length) { %><div class="max-w-7xl mx-auto px-4 mt-4"><div class="rounded-2xl bg-rose-100 text-rose-700 p-4 font-bold"><%= messages.error[0] %></div></div><% } %>
+<% if (messages && messages.success && messages.success.length) { %><div class="max-w-7xl mx-auto px-4 mt-4"><div class="rounded-2xl bg-emerald-100 text-emerald-700 p-4 font-bold"><%= messages.success[0] %></div></div><% } %>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
+  :root {
+    --font-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  }
+  body {
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  img, video { max-width: 100%; }
+  main, section, article, form { min-width: 0; }
+  input, select, textarea { max-width: 100%; }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+  :where(a, button, input, select, textarea, summary):focus-visible {
+    outline: 2px solid #0d9488;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+  :where(button, input, select):disabled {
+    cursor: not-allowed;
+    opacity: .55;
+  }
+</style>

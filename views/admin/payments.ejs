@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ödəniş Simulyatoru | ShopNexus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <%- include('../partials/navbar', { user: user || null }) %>
+  <div class="flex">
+    <%- include('../partials/admin-sidebar', { current: 'payments' }) %>
+    <main class="min-w-0 flex-1 p-5 md:p-8">
+      <div class="mx-auto max-w-3xl">
+        <div class="mb-8">
+          <p class="text-sm font-black uppercase tracking-wider text-teal-600">Admin paneli</p>
+          <h1 class="mt-1 text-3xl font-black">Ödəniş Simulyatoru</h1>
+        </div>
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div class="mb-7 flex items-start gap-4">
+            <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-teal-50 text-teal-600"><i class="fa-solid fa-credit-card"></i></div>
+            <div>
+              <h2 class="text-xl font-black">Kart ödəniş simulyasiyası</h2>
+              <p class="mt-1 text-sm text-slate-500">Test məqsədilə kart nəticələrini məcburi olaraq təyin edin.</p>
+            </div>
+          </div>
+          <form action="/admin/payments/simulator" method="POST" class="space-y-5">
+            <div>
+              <label for="force_result" class="mb-2 block text-sm font-black text-slate-700">Məcburi nəticə</label>
+              <select id="force_result" name="force_result" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold outline-none transition focus:border-teal-400 focus:bg-white focus:ring-4 focus:ring-teal-500/10">
+                <% var options = [
+                  ['', 'Söndür (kart son 4 rəqəminə görə)'],
+                  ['SUCCESS', 'SUCCESS'],
+                  ['DECLINED', 'DECLINED'],
+                  ['INSUFFICIENT_FUNDS', 'INSUFFICIENT_FUNDS'],
+                  ['AUTH_REQUIRED', 'AUTH_REQUIRED'],
+                  ['TIMEOUT', 'TIMEOUT']
+                ]; %>
+                <% options.forEach(o => { %>
+                  <option value="<%= o[0] %>" <%= String(forceResult || '') === o[0] ? 'selected' : '' %>><%= o[1] %></option>
+                <% }) %>
+              </select>
+              <p class="mt-2 text-sm text-slate-500">Boş saxlasanız, son 4 rəqəmə görə deterministik nəticə tətbiq olunur.</p>
+            </div>
+            <div>
+              <label for="delay_ms" class="mb-2 block text-sm font-black text-slate-700">Gecikmə (ms)</label>
+              <input id="delay_ms" name="delay_ms" type="number" step="1" min="0" max="3000" value="<%= delayMs %>" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-bold outline-none transition focus:border-teal-400 focus:bg-white focus:ring-4 focus:ring-teal-500/10">
+              <p class="mt-2 text-sm text-slate-500">0-3000 ms aralığında təyin edilə bilər.</p>
+            </div>
+            <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-6 py-3 font-black text-white transition hover:bg-teal-700"><i class="fa-solid fa-floppy-disk"></i>Yadda saxla</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+  <%- include('../partials/footer') %>
+</body>
+</html>
