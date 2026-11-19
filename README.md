@@ -24,7 +24,8 @@ It is aimed at:
 - **Instructors** running secure-coding or capture-the-flag style workshops
 - Anyone who wants a safe, local target for Burp Suite, ZAP, curl or Postman
 
-Challenge briefs (targets only, **no solutions**) live in [`CHALLENGES.md`](CHALLENGES.md).
+A high-level challenge overview (difficulty tiers and vulnerability classes only, **no
+locations and no solutions**) lives in [`CHALLENGES.md`](CHALLENGES.md).
 
 ---
 
@@ -46,25 +47,11 @@ Challenge briefs (targets only, **no solutions**) live in [`CHALLENGES.md`](CHAL
 - **i18n** — Azerbaijani, English and Russian locales
 - **Storage** — embedded NeDB files in `data/`, so there is no database to install
 
-### Deliberately planted vulnerabilities (15)
+### Deliberately planted vulnerabilities
 
-| ID | Difficulty | Vulnerability class | Entry point |
-|----|------------|---------------------|-------------|
-| E1 | Easy | Open redirect | `POST /lang/:code` |
-| E2 | Easy | OTP rate limiting | `POST /checkout/otp` |
-| E3 | Easy | Review IDOR | `POST /reviews/:id/delete` |
-| E4 | Easy | Coupon validation / business logic | `POST /vendor/coupons`, `POST /admin/coupons` |
-| E5 | Easy | Hidden & debug endpoints | `GET /debug/*`, `GET /admin/system` |
-| M6 | Medium | CSRF | `POST /user/profile`, `POST /user/address` |
-| M7 | Medium | Mass assignment | `POST /user/profile` |
-| M8 | Medium | Coupon usage counting flaw | `POST /orders` |
-| M9 | Medium | NoSQL / query injection | `POST /orders/search` |
-| M10 | Medium | Cross-portal / JWT role mismatch | authentication flow (`/auth/*`) |
-| H11 | Hard | Broken object-level authorization (support tickets) | `POST /support/:id/reply` |
-| H12 | Hard | Host header injection | `GET /receipts/:token` |
-| H13 | Hard | Refund state-machine confusion | `POST /admin/refunds/:id/approve` |
-| H14 | Hard | Gift card race condition | `POST /wallet/redeem-giftcard` |
-| H15 | Hard | Vendor isolation (BOLA) | `POST /vendor/questions/:id/answer` |
+This lab contains 15+ deliberately planted vulnerabilities across easy, medium and hard
+difficulty levels, covering common web security classes. Exact locations and types are not
+disclosed here — finding them is part of the exercise.
 
 Additional hardening gaps exist beyond the 15 headline challenges — treat any suspicious
 behaviour as fair game.
@@ -132,7 +119,7 @@ All configuration lives in `.env` (git-ignored). `.env.example` contains safe la
 | `NODE_ENV` | `development` | Runtime mode. Keep `development` for the lab. |
 | `PORT` | `3000` | HTTP port the server listens on. |
 | `PUBLIC_BASE_URL` | *(empty)* | Absolute base URL used in receipt/QR links. When empty, links are built from the incoming request host — the right behaviour for local experimenting. |
-| `JWT_SECRET` | `development-only-jwt-key` | Signing key for auth tokens. The well-known development value is intentional and is part of the lab's authentication challenges. |
+| `JWT_SECRET` | `development-only-jwt-key` | Development-only signing key. Do not reuse this value in any other project. |
 | `SESSION_SECRET` | `development-only-session-key` | Signing key for the Express session cookie. Lab value only. |
 | `DEMO_ACCOUNT_PASSWORD` | `ShopNexusLab2026!` | Only used by the seed scripts (`npm run seed`, `npm run seed:marketplace`). Does not affect the credentials below unless you reseed. |
 

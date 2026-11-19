@@ -1,80 +1,53 @@
-# ShopNexus Lab — Challenge Brief
+# ShopNexus Lab — Challenge Overview
 
-15 zəiflik, 3 çətinlik səviyyəsi. Həllər və exploit addımları bu repoda yoxdur.
+15 deliberately planted vulnerabilities across three difficulty tiers, plus assorted
+hardening gaps in the rest of the application.
 
-> Bu sənəd yalnız hədəf səthini (endpoint və zəiflik kateqoriyasını) verir.
-> Hər challenge-ın necə istismar olunacağını özünüz tapmalısınız.
+This document is intentionally generic: it lists **difficulty levels and broad
+vulnerability classes only**. Specific endpoints, parameters, files and exploit steps are
+not disclosed — locating and exploiting each issue is the exercise.
 
-## Easy (5)
-
-### E1 — Open Redirect
-- **Endpoint:** `POST /lang/:code` (həmçinin `POST /cart/add`, `POST /wishlist/add`)
-- **Hədəf:** istifadəçini xarici domenə yönləndirmək.
-
-### E2 — OTP Rate Limiting
-- **Endpoint:** `POST /checkout/otp`
-- **Hədəf:** OTP təsdiq mərhələsini məhdudiyyətsiz sınaqdan keçirmək.
-
-### E3 — Review IDOR
-- **Endpoint:** `POST /reviews/:id/delete`
-- **Hədəf:** başqa istifadəçinin rəyini silmək.
-
-### E4 — Coupon Validation (business logic)
-- **Endpoint:** `POST /vendor/coupons`, `POST /admin/coupons` → `POST /cart/apply-coupon`
-- **Hədəf:** məntiqsiz endirim dəyərləri ilə sifarişi sıfır qiymətə gətirmək.
-
-### E5 — Hidden / Debug Endpoints
-- **Endpoint:** `GET /debug/config`, `GET /debug/settings`, `GET /debug/stats`, `GET /admin/system`
-- **Hədəf:** autentifikasiyasız sistem/konfiqurasiya məlumatı əldə etmək.
-
-## Medium (5)
-
-### M6 — CSRF
-- **Endpoint:** `POST /user/profile`, `POST /user/address`, `POST /user/address/:id`
-- **Hədəf:** istifadəçinin sessiyası ilə onun adından state-changing sorğu göndərmək.
-
-### M7 — Mass Assignment
-- **Endpoint:** `POST /user/profile`
-- **Hədəf:** profil yeniləmə sorğusu ilə icazəsiz sahə (məs. rol) dəyişmək.
-
-### M8 — First-order Coupon Sayım Xətası
-- **Endpoint:** `POST /orders`
-- **Hədəf:** "ilk sifariş" kuponunu təkrar-təkrar tətbiq etmək.
-
-### M9 — NoSQL / Query Injection
-- **Endpoint:** `POST /orders/search`
-- **Hədəf:** filtr obyekti ilə başqa istifadəçilərin sifarişlərinə çıxış əldə etmək.
-
-### M10 — Cross-Portal / JWT Role Mismatch
-- **Endpoint:** auth axını (`/auth/*`)
-- **Hədəf:** token/rol məntiqindən istifadə edərək yüksək səlahiyyətli portala keçmək.
-
-## Hard (5)
-
-### H11 — Support Ticket Authorization
-- **Endpoint:** `POST /support/:id/reply`
-- **Hədəf:** başqa istifadəçinin dəstək biletinə cavab yazmaq.
-
-### H12 — Host Header Injection
-- **Endpoint:** `GET /receipts/:token`, `GET /orders/:id/receipt`
-- **Hədəf:** qəbz/QR linkini nəzarət etdiyiniz hosta yönləndirmək.
-
-### H13 — Refund State-Machine Confusion
-- **Endpoint:** `POST /admin/refunds/:id/approve`
-- **Hədəf:** eyni geri qaytarmanı təkrar təsdiqləyib balansı iki dəfə artırmaq.
-
-### H14 — Gift Card Race Condition
-- **Endpoint:** `POST /wallet/redeem-giftcard`
-- **Hədəf:** paralel sorğularla eyni gift card kodunu bir neçə dəfə istifadə etmək.
-
-### H15 — Vendor Isolation (BOLA)
-- **Endpoint:** `POST /vendor/questions/:id/answer`
-- **Hədəf:** başqa vendor-un məhsul sualına cavab yazmaq.
+Solutions are not published anywhere in this repository.
 
 ---
 
-## Qaydalar
+## Easy (5)
 
-- Yalnız **öz lokal nüsxənizdə** işləyin (`http://localhost:3000`).
-- Başqa şəxslərin sistemlərinə qarşı bu üsulları tətbiq etmək qanunsuzdur.
-- Həlləri paylaşmırıq; öyrənmək üçün özünüz araşdırın.
+Entry-level issues that you can usually find by browsing the app normally and watching the
+HTTP traffic in your browser's developer tools:
+
+- Open redirects
+- Missing rate limiting on security-sensitive actions
+- Broken object-level access to another user's content
+- Business-logic validation gaps in discounts and promotions
+- Unintended information exposure through diagnostic functionality
+
+## Medium (5)
+
+Requires a proxy (Burp Suite, ZAP, etc.) and some understanding of sessions, roles and data
+access layers:
+
+- Cross-site request forgery on state-changing actions
+- Mass assignment through over-permissive update handlers
+- Logic flaws in promotion usage accounting
+- Query / operator injection into the data access layer
+- Cross-portal role and token handling weaknesses
+
+## Hard (5)
+
+Multi-step, timing-sensitive or privilege-boundary issues that need careful reasoning about
+application state:
+
+- Broken object-level authorization in customer-support workflows
+- Host header injection affecting generated links
+- State-machine confusion in refund processing
+- Race conditions in gift-card redemption
+- Cross-tenant isolation bypass between vendors
+
+---
+
+## Rules
+
+- Work only against your own local copy (`http://localhost:3000`).
+- Never use these techniques against systems you do not own or have written permission to test.
+- We do not publish walkthroughs or flags; research each issue yourself.
